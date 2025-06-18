@@ -1,0 +1,88 @@
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-header {
+  background-color: #ffffff;
+  height: 150px;
+  padding: 20px;
+  color: rgb(0, 0, 0);
+  text-align: center;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 
+                0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  
+}
+
+.App-title {
+  font-size: 1.5em;
+  color: black;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.AuthForm{  
+  margin: 10px;
+  padding: 10px;
+}
+
+.container{
+  margin-top: 30px;
+  text-align: center;
+}
+
+.buttons{
+  margin-top: 25px;
+}
+
+.advantages-container {
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  flex-direction: column; 
+  margin-left: auto;
+  margin-right: auto;
+  text-align:center;
+  padding: 20px; 
+  margin-top: 25px;
+  height: 500px;
+}
+.adv-container{
+  padding: 10px 10px;
+  margin: 30px 30px 30px;
+  display: flex;
+}
+
+.adv-block{
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 
+              0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  flex: 1;
+  margin: 0 15px;
+  padding: 25px;
+  height: 250px;
+  width: 500px;
+  box-sizing: border-box;
+}
+
+
+.borderNot{
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
