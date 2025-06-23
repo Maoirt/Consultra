@@ -24,6 +24,11 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import com.example.auth_service.repository.ConsultantRepository;
+
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "AuthController Controller", description = "Контроллер для авторизации и регистрации")
@@ -32,6 +37,7 @@ public class AuthController {
     private final UserServiceImpl userService;
     private final UserAuthProvider userAuthProvider;
     private final VerificationServiceImpl verificationService;
+    private final ConsultantRepository consultantRepository;
     //private final CustomOAuth2UserService customOAuth2UserService;
 
     @PostMapping("/login")
@@ -54,7 +60,7 @@ public class AuthController {
     @PostMapping("/register")
     @CrossOrigin(origins = "http://localhost:3000")
     @Operation(summary = "Вход", description = "Позволяет зарегистрироваться в приложении")
-    public ResponseEntity<UserDto> register(
+    public ResponseEntity<Map<String, Object>> register(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные о пользователе",
                     required = true,
@@ -65,8 +71,18 @@ public class AuthController {
         UserDto user = userService.register(signUpDto);
         user.setToken(userAuthProvider.createToken(user.getEmail()));
 
-        return ResponseEntity.ok(user);
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", user.getToken());
+        response.put("email", user.getEmail());
+        response.put("role", signUpDto.getRole());
 
+        if ("CONSULTANT".equalsIgnoreCase(signUpDto.getRole())) {
+            consultantRepository.findByUserId(user.getId()).ifPresent(consultant ->
+                response.put("consultantId", consultant.getId())
+            );
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verify-email")

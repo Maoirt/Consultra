@@ -41,4 +41,7 @@ public class SignUpDto {
     @Size(min = 10, max = 250)
     @Schema(description = "Пароль пользователя", example = "r4hoiahiugy3ya8o7gak")
     private char[] password;
+
+    @Schema(description = "Роль пользователя (USER или CONSULTANT)", example = "CONSULTANT")
+    private String role;
 }

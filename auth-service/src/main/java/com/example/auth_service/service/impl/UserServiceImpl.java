@@ -4,9 +4,11 @@ import com.example.auth_service.dto.*;
 import com.example.auth_service.exception.UserException;
 import com.example.auth_service.mapper.ProfileMapper;
 import com.example.auth_service.mapper.UserMapper;
+import com.example.auth_service.model.Consultant;
 import com.example.auth_service.model.User;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.request.EmailRequest;
+import com.example.auth_service.service.ConsultantService;
 import com.example.auth_service.service.UserService;
 import com.example.auth_service.util.ActivationTokenGenerator;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.CharBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final ProfileMapper profileMapper;
+    private final ConsultantService consultantService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -76,13 +80,21 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.getPassword())));
         userRepository.save(user);
 
+        if ("CONSULTANT".equalsIgnoreCase(userDto.getRole())) {
+            Consultant consultant = Consultant.builder()
+                .userId(user.getId())
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
+            consultantService.registerConsultant(user.getId(), consultant, List.of());
+        }
+
         String token = ActivationTokenGenerator.generateToken();
         user.setVerificationToken(token);
         userRepository.save(user);
 
-        String confirmationUrl = "http://localhost:8081/verify-email?token=" + token;
-        EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Email Verification", "Click the link to verify your email: " + confirmationUrl);
-        restTemplate.postForObject("http://localhost:8083/api/email/send-email", emailRequest, Void.class);
+//        String confirmationUrl = "http://localhost:8081/verify-email?token=" + token;
+//        EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Email Verification", "Click the link to verify your email: " + confirmationUrl);
+//        restTemplate.postForObject("http://localhost:8083/api/email/send-email", emailRequest, Void.class);
 
         return userMapper.toUserDto(user);
     }

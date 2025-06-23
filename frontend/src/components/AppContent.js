@@ -5,8 +5,9 @@ import AuthContent from './AuthContent';
 import logo from '../logo.svg';
 import LoginForm from './form/LoginForm';
 import WelcomeContent from './WelcomeContent';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import RegistrationForm from './form/RegistrationForm';
+import ConsultantPage from './ConsultantPage';
 
 export default class AppContent extends React.Component {
     constructor(props) {
@@ -63,22 +64,27 @@ export default class AppContent extends React.Component {
         });
     };
 
-    onRegister = (e, email, firstName, lastName, phone, password) => {
+    onRegister = (e, email, firstName, lastName, phone, password, role = 'USER') => {
         e.preventDefault();
         request("POST", "/register", {
             email: email,
             firstName: firstName,
             lastName: lastName,
             phone: phone,
-            password: password
+            password: password,
+            role: role
         }).then((response) => {
             localStorage.setItem('auth_token', response.data.token);
             setAuthHeader(response.data.token);
-            this.setState({
-                componentToShow: "messages",
-                isAuthenticated: true,
-                email: email
-            });
+            if (role === 'CONSULTANT' && response.data.consultantId) {
+                window.location.href = `/consultant/${response.data.consultantId}`;
+            } else {
+                this.setState({
+                    componentToShow: "messages",
+                    isAuthenticated: true,
+                    email: email
+                });
+            }
         }).catch((error) => {
             setAuthHeader(null);
             this.setState({ componentToShow: "welcome" });
@@ -141,8 +147,14 @@ export default class AppContent extends React.Component {
                             <Navigate to="/messages" /> :
                             <RegistrationForm onRegister={this.onRegister} />
                     } />
+                    <Route path="/consultant/:id" element={<ConsultantPageWrapper />} />
                 </Routes>
             </Router>
         );
     }
+}
+
+function ConsultantPageWrapper() {
+    const { id } = useParams();
+    return <ConsultantPage consultantId={id} />;
 }

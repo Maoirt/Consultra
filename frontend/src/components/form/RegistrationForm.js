@@ -31,12 +31,12 @@ export default class RegistrationForm extends React.Component {
 
   onSubmitRegistrationUser = (e) => {
     console.log("Registering user:", this.state.email, this.state.password);
-    this.state.onRegister(e, this.state.email, this.state.firstName, this.state.lastName, this.state.phone, this.state.password);
+    this.state.onRegister(e, this.state.email, this.state.firstName, this.state.lastName, this.state.phone, this.state.password, 'USER');
   };
 
   onSubmitRegistrationConsultant = (e) => {
     console.log("Registering user:", this.state.email, this.state.password);
-    this.state.onRegister(e, this.state.email, this.state.firstName, this.state.lastName, this.state.phone, this.state.password);
+    this.state.onRegister(e, this.state.email, this.state.firstName, this.state.lastName, this.state.phone, this.state.password, 'CONSULTANT');
   };
 
   handleEmailChange = (event) => {
