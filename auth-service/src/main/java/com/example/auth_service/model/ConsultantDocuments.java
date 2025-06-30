@@ -22,7 +22,10 @@ public class ConsultantDocuments {
     @Column(name = "consultant_id", nullable = false)
     private UUID consultantId;
 
-    @Column(name = "type", length = 30)
+    @Column(name = "name", length = 100)
+    private String name;
+
+    @Column(name = "type", length = 100)
     private String type;
 
     @Column(name = "file_url", nullable = false, length = 256)

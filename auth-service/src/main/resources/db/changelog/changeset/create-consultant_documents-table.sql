@@ -4,7 +4,8 @@ CREATE TABLE consultant_documents
 (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     consultant_id uuid NOT NULL,
-    type varchar(30),
+    name varchar(100) NOT NULL,
+    type varchar(100),
     file_url varchar(256) NOT NULL,
     description varchar(150) NOT NULL,
     CONSTRAINT consultant_documents_id_pk PRIMARY KEY (id),

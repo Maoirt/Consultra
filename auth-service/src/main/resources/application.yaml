@@ -7,9 +7,19 @@ spring:
 
   datasource:
     url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/myvault}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:maoirt}
-
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+app:
+  upload:
+    base-path: ./uploads
+    avatar:
+      path: ./uploads/avatars
+      max-size: 2097152  # 2MB
+      allowed-types: [ jpg, jpeg, png, gif ]
+    document:
+      path: ./uploads/documents
+      max-size: 10485760  # 10MB
+      allowed-types: [ pdf, doc, docx, jpg, png ]
 
 server:
   port: 8081

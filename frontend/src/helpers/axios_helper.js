@@ -14,7 +14,7 @@ export const setAuthHeader = (token) => {
     }
 };
 axios.defaults.baseURL = 'http://localhost:8081';
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+//axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 export const request = (method, url, data) => {
 
@@ -23,9 +23,16 @@ export const request = (method, url, data) => {
         headers = {'Authorization': `Bearer ${getAuthToken()}`};
     }
 
+    // Если data — строка, сериализуем как JSON
+    let sendData = data;
+    if (typeof data === 'string') {
+        sendData = JSON.stringify(data);
+        headers['Content-Type'] = 'application/json';
+    }
+
     return axios({
         method: method,
         url: url,
         headers: headers,
-        data: data});
+        data: sendData});
 };

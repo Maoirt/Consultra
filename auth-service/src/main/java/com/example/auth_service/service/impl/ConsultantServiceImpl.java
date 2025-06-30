@@ -26,14 +26,14 @@ public class ConsultantServiceImpl implements ConsultantService {
     public Consultant registerConsultant(UUID userId, Consultant consultant, List<UUID> specializationIds) {
         consultant.setUserId(userId);
         Consultant saved = consultantRepository.save(consultant);
-        for (UUID specId : specializationIds) {
-            consultantToSpecializationRepository.save(
-                ConsultantToSpecialization.builder()
-                    .consultantId(saved.getId())
-                    .specializationId(specId)
-                    .build()
-            );
-        }
+//        for (UUID specId : specializationIds) {
+//            consultantToSpecializationRepository.save(
+//                ConsultantToSpecialization.builder()
+//                    .consultantId(saved.getId())
+//                    .specializationId(specId)
+//                    .build()
+//            );
+//        }
         return saved;
     }
 
@@ -46,7 +46,9 @@ public class ConsultantServiceImpl implements ConsultantService {
     @Transactional
     public Consultant updateConsultant(UUID consultantId, Consultant consultant, List<UUID> specializationIds) {
         Consultant existing = consultantRepository.findById(consultantId).orElseThrow();
-        existing.setAvatarUrl(consultant.getAvatarUrl());
+        if (consultant.getAvatarUrl() != null) {
+            existing.setAvatarUrl(consultant.getAvatarUrl());
+        }
         existing.setAbout(consultant.getAbout());
         existing.setExperienceYears(consultant.getExperienceYears());
         existing.setCity(consultant.getCity());
@@ -61,6 +63,17 @@ public class ConsultantServiceImpl implements ConsultantService {
             );
         }
         return existing;
+    }
+
+    @Override
+    @Transactional
+    public Consultant updateAvatar(UUID consultantId, String avatarUrl) {
+        System.out.println("Updating avatar for consultant: " + consultantId + " with URL: " + avatarUrl);
+        Consultant existing = consultantRepository.findById(consultantId).orElseThrow();
+        existing.setAvatarUrl(avatarUrl);
+        Consultant saved = consultantRepository.save(existing);
+        System.out.println("Saved consultant with avatarUrl: " + saved.getAvatarUrl());
+        return saved;
     }
 
     @Override
@@ -88,5 +101,36 @@ public class ConsultantServiceImpl implements ConsultantService {
     @Override
     public List<ConsultantReviews> getReviews(UUID consultantId) {
         return consultantReviewsRepository.findByConsultantId(consultantId);
+    }
+
+    @Override
+    public List<ConsultantToSpecialization> getConsultantToSpecializations(UUID consultantId) {
+        return consultantToSpecializationRepository.findByConsultantId(consultantId);
+    }
+
+    @Override
+    public ConsultantSpecialization getSpecializationById(UUID specializationId) {
+        return consultantSpecializationRepository.findById(specializationId).orElseThrow();
+    }
+
+    @Override
+    @Transactional
+    public ConsultantSpecialization addSpecializationToConsultant(UUID consultantId, String specializationName) {
+        ConsultantSpecialization specialization = consultantSpecializationRepository.findByName(specializationName)
+            .orElseGet(() -> consultantSpecializationRepository.save(
+                ConsultantSpecialization.builder().name(specializationName).build()
+            ));
+        // Check if already linked
+        boolean alreadyLinked = consultantToSpecializationRepository.findByConsultantId(consultantId).stream()
+            .anyMatch(link -> link.getSpecializationId().equals(specialization.getId()));
+        if (!alreadyLinked) {
+            consultantToSpecializationRepository.save(
+                ConsultantToSpecialization.builder()
+                    .consultantId(consultantId)
+                    .specializationId(specialization.getId())
+                    .build()
+            );
+        }
+        return specialization;
     }
 } 

@@ -38,7 +38,7 @@ export default function Header(props) {
                         <MDBDropdownMenu>
                             <MDBDropdownItem>
                                 <Link to="/search" className="dropdown-item">Поиск</Link>
-                                <Link to="/settings" className="dropdown-item">Настройка</Link>
+                                <Link to="/consultant/:id" className="dropdown-item">Профиль</Link>
                             </MDBDropdownItem>
                         </MDBDropdownMenu>
                     </MDBDropdown>

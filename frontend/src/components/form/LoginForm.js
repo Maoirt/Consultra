@@ -31,13 +31,13 @@ export default class LoginForm extends React.Component {
 
   onSubmitloginUser = (e) => {
       e.preventDefault();
-    this.state.onLogin(e, this.state.email, this.state.password);
+    this.state.onLogin(e, this.state.email, this.state.password, 'USER');
   };
 
   onSubmitloginConsult = (e) => {
     e.preventDefault();
-  this.state.onLogin(e, this.state.email, this.state.password);
-};
+    this.state.onLogin(e, this.state.email, this.state.password, 'CONSULTANT');
+  };
 
   loginGoogle = () => {
     window.location.href = "http://localhost:8081/oauth2/authorization/google"

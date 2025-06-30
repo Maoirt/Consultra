@@ -57,6 +57,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/user/update").authenticated()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/oauth2/**", "/verify-email/**").permitAll()
+                        .requestMatchers("/consultant/*/documents/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/consultant/*/images/*").permitAll()
                         .anyRequest().authenticated()
                 )
 //                .oauth2Login(oauth2 -> oauth2

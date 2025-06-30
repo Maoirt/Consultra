@@ -7,7 +7,8 @@ import LoginForm from './form/LoginForm';
 import WelcomeContent from './WelcomeContent';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import RegistrationForm from './form/RegistrationForm';
-import ConsultantPage from './ConsultantPage';
+import ConsultantPage from './page/ConsultantPage';
+import SearchPage from './page/SearchPage';
 
 export default class AppContent extends React.Component {
     constructor(props) {
@@ -45,7 +46,7 @@ export default class AppContent extends React.Component {
         setAuthHeader(null);
     };
 
-    onLogin = (e, email, password) => {
+    onLogin = (e, email, password, role = 'USER') => {
         e.preventDefault();
         request("POST", "/login", {
             email: email,
@@ -53,11 +54,15 @@ export default class AppContent extends React.Component {
         }).then((response) => {
             localStorage.setItem('auth_token', response.data.token);
             setAuthHeader(response.data.token);
+            if (role === 'CONSULTANT' && response.data.consultantId) {
+                window.location.href = `/consultant/${response.data.consultantId}`;
+            } else {
             this.setState({
-                componentToShow: "messages",
+                componentToShow: "search",
                 isAuthenticated: true,
                 email: email
             });
+        }
         }).catch((error) => {
             setAuthHeader(null);
             this.setState({ componentToShow: "welcome" });
@@ -80,7 +85,7 @@ export default class AppContent extends React.Component {
                 window.location.href = `/consultant/${response.data.consultantId}`;
             } else {
                 this.setState({
-                    componentToShow: "messages",
+                    componentToShow: "search",
                     isAuthenticated: true,
                     email: email
                 });
@@ -132,9 +137,10 @@ export default class AppContent extends React.Component {
                             <Navigate to="/messages" /> :
                             <WelcomeContent />
                     } />
+
                     <Route path="/login" element={
                         this.state.isAuthenticated ?
-                            <Navigate to="/messages" /> :
+                            <Navigate to="/search" /> :
                             <LoginForm onLogin={this.onLogin} />
                     } />
                     <Route path="/messages" element={
@@ -147,6 +153,7 @@ export default class AppContent extends React.Component {
                             <Navigate to="/messages" /> :
                             <RegistrationForm onRegister={this.onRegister} />
                     } />
+                    <Route path="search" element={<SearchPage />} />
                     <Route path="/consultant/:id" element={<ConsultantPageWrapper />} />
                 </Routes>
             </Router>
