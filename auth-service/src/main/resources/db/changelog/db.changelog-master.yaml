@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/changeset/create-consultant_documents-table.sql
   - include:
       file: db/changelog/changeset/create-consultant_stats-table.sql
+  - include:
+      file: db/changelog/changeset/add-profession-to-consultant-table.sql

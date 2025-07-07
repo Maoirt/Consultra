@@ -3,6 +3,11 @@ package com.example.auth_service.controller;
 import com.example.auth_service.model.*;
 import com.example.auth_service.service.ConsultantService;
 import com.example.auth_service.dto.SpecializationDto;
+import com.example.auth_service.repository.ConsultantSpecializationRepository;
+import com.example.auth_service.dto.ConsultantProfileDto;
+import com.example.auth_service.mapper.ConsultantProfileMapper;
+import com.example.auth_service.model.User;
+import com.example.auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -28,6 +33,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ConsultantController {
     private final ConsultantService consultantService;
+    private final ConsultantSpecializationRepository consultantSpecializationRepository;
+    private final UserRepository userRepository;
 
     @Value("${app.upload.avatar.path}")
     private String uploadDir;
@@ -47,12 +54,11 @@ public class ConsultantController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Consultant> getConsultant(@PathVariable UUID id) {
-        System.out.println("Getting consultant with ID: " + id);
+    public ResponseEntity<ConsultantProfileDto> getConsultant(@PathVariable UUID id) {
         Consultant consultant = consultantService.getConsultant(id);
-        System.out.println("Loaded consultant: " + consultant);
-        System.out.println("Consultant avatarUrl: " + consultant.getAvatarUrl());
-        return ResponseEntity.ok(consultant);
+        User user = userRepository.findById(consultant.getUserId()).orElse(null);
+        ConsultantProfileDto dto = ConsultantProfileMapper.toDto(consultant, user);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}")
@@ -157,8 +163,9 @@ public class ConsultantController {
         String fileExtension = originalFilename != null ?
                 originalFilename.substring(originalFilename.lastIndexOf(".") + 1) : "jpg";
         
-        String fileName = id + "-" + System.currentTimeMillis() + "." + fileExtension;
-        
+        //String fileName = id + "-" + System.currentTimeMillis() + "." + fileExtension;
+        String fileName = "avatar-" + id + "-" + fileExtension;
+
         Path filePath = uploadPath.resolve(fileName);
         
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
@@ -230,5 +237,24 @@ public class ConsultantController {
     public ResponseEntity<ConsultantSpecialization> addSpecialization(@PathVariable UUID id, @RequestBody SpecializationDto specializationDto) {
         ConsultantSpecialization spec = consultantService.addSpecializationToConsultant(id, specializationDto.getName());
         return ResponseEntity.ok(spec);
+    }
+
+    @GetMapping("/specializations")
+    public ResponseEntity<List<ConsultantSpecialization>> getAllSpecializations() {
+        return ResponseEntity.ok(consultantSpecializationRepository.findAll());
+    }
+
+    @GetMapping("/professions")
+    public ResponseEntity<List<String>> getAllProfessions() {
+        return ResponseEntity.ok(consultantService.findAllProfessions());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ConsultantProfileDto>> searchConsultants(
+            @RequestParam(required = false) String profession,
+            @RequestParam(required = false) UUID specializationId,
+            @RequestParam(required = false) Integer minPrice,
+            @RequestParam(required = false) Integer maxPrice) {
+        return ResponseEntity.ok(consultantService.searchConsultants(profession, specializationId, minPrice, maxPrice));
     }
 } 

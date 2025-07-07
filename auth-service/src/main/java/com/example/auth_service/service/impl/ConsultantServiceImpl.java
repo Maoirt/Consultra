@@ -3,6 +3,10 @@ package com.example.auth_service.service.impl;
 import com.example.auth_service.model.*;
 import com.example.auth_service.repository.*;
 import com.example.auth_service.service.ConsultantService;
+import com.example.auth_service.dto.ConsultantProfileDto;
+import com.example.auth_service.mapper.ConsultantProfileMapper;
+import com.example.auth_service.model.User;
+import com.example.auth_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,7 @@ public class ConsultantServiceImpl implements ConsultantService {
     private final ConsultantServicesRepository consultantServicesRepository;
     private final ConsultantDocumentsRepository consultantDocumentsRepository;
     private final ConsultantReviewsRepository consultantReviewsRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -52,6 +57,7 @@ public class ConsultantServiceImpl implements ConsultantService {
         existing.setAbout(consultant.getAbout());
         existing.setExperienceYears(consultant.getExperienceYears());
         existing.setCity(consultant.getCity());
+        existing.setProfession(consultant.getProfession());
         consultantRepository.save(existing);
         consultantToSpecializationRepository.deleteAll(consultantToSpecializationRepository.findByConsultantId(consultantId));
         for (UUID specId : specializationIds) {
@@ -132,5 +138,21 @@ public class ConsultantServiceImpl implements ConsultantService {
             );
         }
         return specialization;
+    }
+
+    @Override
+    public List<ConsultantProfileDto> searchConsultants(String profession, UUID specializationId, Integer minPrice, Integer maxPrice) {
+        List<Consultant> consultants = consultantRepository.searchConsultants(profession, specializationId, minPrice, maxPrice);
+        return consultants.stream()
+                .map(c -> {
+                    User user = userRepository.findById(c.getUserId()).orElse(null);
+                    return ConsultantProfileMapper.toDto(c, user);
+                })
+                .toList();
+    }
+
+    @Override
+    public List<String> findAllProfessions() {
+        return consultantRepository.findAllProfessions();
     }
 } 

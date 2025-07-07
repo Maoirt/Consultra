@@ -1,0 +1,245 @@
+/* Стили для SearchPage */
+
+body {
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.search-page-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 2rem auto;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.filters-sidebar {
+  flex: 0 0 280px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.filters-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.filter-group input[type="text"],
+.filter-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.apply-filters-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: linear-gradient(90deg, #3b82f6, #14b8a6);
+}
+
+.results-main {
+  flex: 1;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.results-count {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.sort-by-select {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+}
+
+.consultant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.consultant-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-main-content {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.consultant-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e9ecef;
+}
+
+.card-center {
+  flex: 1;
+}
+
+.name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.consultant-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.verified-badge {
+  background-color: #d1fae5;
+  color: #065f46;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+}
+
+.consultant-spec {
+  font-size: 1rem;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.consultant-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.75rem;
+}
+
+.consultant-meta .rating,
+.consultant-meta .location {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.consultant-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.card-right {
+  text-align: right;
+}
+
+.consultant-price {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.price-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.card-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  padding-top: 1.5rem;
+}
+
+
+.write-message-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  color: #495057;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.price-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: #dee2e6;
+  outline: none;
+  border-radius: 4px;
+}
+
+.price-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #3b82f6;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.price-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #3b82f6;
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+}
+  

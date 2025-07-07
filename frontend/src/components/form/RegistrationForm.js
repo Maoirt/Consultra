@@ -42,7 +42,6 @@ export default class RegistrationForm extends React.Component {
   handleEmailChange = (event) => {
     const email = event.target.value;
     this.setState({ email });
-    alert(email)
     if (email && email.includes('@')) {
       fetch('http://localhost:8081/send-verification-code', {
         method: 'POST',

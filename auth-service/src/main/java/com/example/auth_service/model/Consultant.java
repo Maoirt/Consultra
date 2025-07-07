@@ -35,6 +35,9 @@ public class Consultant {
     @Column(name = "city", length = 30)
     private String city;
 
+    @Column(name = "profession", length = 100)
+    private String profession;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 } 

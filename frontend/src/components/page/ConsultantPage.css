@@ -1,0 +1,264 @@
+.consultant-page {
+  background: #fff;
+  color: #111;
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 40px auto;
+  border: 1px solid #222;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 32px;
+}
+.consultant-header {
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid #222;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 32px;
+}
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #222;
+  background: #eee;
+  margin-bottom: 8px;
+}
+.avatar-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.upload-btn {
+  background: #007bff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: center;
+  transition: background 0.2s;
+}
+.upload-btn:hover {
+  background: #0056b3;
+}
+.upload-submit-btn {
+  background: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+.upload-submit-btn:hover:not(:disabled) {
+  background: #1e7e34;
+}
+.upload-submit-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+.info h2 {
+  margin: 0 0 8px 0;
+  font-size: 2em;
+  color: #111;
+}
+.info > div {
+  margin-bottom: 4px;
+}
+.about-block {
+  margin-bottom: 24px;
+  border-bottom: 1px solid #222;
+  padding-bottom: 16px;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tabs button {
+  background: #fff;
+  color: #111;
+  border: 1px solid #222;
+  border-radius: 4px 4px 0 0;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s, color 0.2s;
+}
+.tabs button.active {
+  background: #111;
+  color: #fff;
+}
+.tab-content ul {
+  list-style: none;
+  padding: 0;
+}
+.tab-content li {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+.tab-content a {
+  color: #111;
+  text-decoration: underline;
+}
+
+/* Стили для редактирования */
+.edit-form {
+  margin-top: 8px;
+}
+.edit-form > div {
+  margin-bottom: 12px;
+}
+.edit-form label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+.edit-form input,
+.edit-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.edit-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.edit-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.edit-btn,
+.save-btn,
+.cancel-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.edit-btn {
+  background: #007bff;
+  color: white;
+  margin-top: 8px;
+}
+.edit-btn:hover {
+  background: #0056b3;
+}
+.save-btn {
+  background: #28a745;
+  color: white;
+}
+.save-btn:hover {
+  background: #1e7e34;
+}
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+.cancel-btn:hover {
+  background: #545b62;
+}
+
+/* Стили для специализаций */
+.specialization-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.specialization-tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #bbdefb;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.specialization-tag.removable {
+  background: #fff3e0;
+  color: #f57c00;
+  border-color: #ffcc02;
+}
+
+.specialization-edit {
+  margin-top: 8px;
+}
+
+.specialization-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.specialization-input input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.add-spec-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.add-spec-btn:hover:not(:disabled) {
+  background: #1e7e34;
+}
+
+.add-spec-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.remove-spec-btn {
+  background: none;
+  border: none;
+  color: #f57c00;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 0;
+  margin-left: 4px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.remove-spec-btn:hover {
+  background: #ffebee;
+} 
