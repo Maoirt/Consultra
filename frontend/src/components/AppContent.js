@@ -9,6 +9,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigat
 import RegistrationForm from './form/RegistrationForm';
 import ConsultantPage from './page/ConsultantPage';
 import SearchPage from './page/SearchPage';
+import ConsultantChatPage from './page/ConsultantChatsPage';
+import ConsultantChatsPage from './page/ConsultantChatsPage';
+import ChatPage from './page/ChatPage';
 
 export default class AppContent extends React.Component {
     constructor(props) {
@@ -53,16 +56,29 @@ export default class AppContent extends React.Component {
             password: password
         }).then((response) => {
             localStorage.setItem('auth_token', response.data.token);
+            // Исправление: поддержка userId и id, проверка на undefined
+            const userId = response.data.id || response.data.userId;
+            if (!userId) {
+                alert('Ошибка: сервер не вернул id пользователя. Обратитесь в поддержку.');
+                setAuthHeader(null);
+                this.setState({ componentToShow: "welcome" });
+                return;
+            }
+            localStorage.setItem('userId', userId);
             setAuthHeader(response.data.token);
-            if (role === 'CONSULTANT' && response.data.consultantId) {
-                window.location.href = `/consultant/${response.data.consultantId}`;
+            if (role === 'CONSULTANT' && userId) {
+                request('GET', `/consultant/by-user/${userId}`)
+                  .then(res => {
+                    localStorage.setItem('consultantId', res.data.id);
+                    window.location.href = `/consultant/${res.data.id}`;
+                  });
             } else {
-            this.setState({
-                componentToShow: "search",
-                isAuthenticated: true,
-                email: email
-            });
-        }
+                this.setState({
+                    componentToShow: "search",
+                    isAuthenticated: true,
+                    email: email
+                });
+            }
         }).catch((error) => {
             setAuthHeader(null);
             this.setState({ componentToShow: "welcome" });
@@ -80,9 +96,22 @@ export default class AppContent extends React.Component {
             role: role
         }).then((response) => {
             localStorage.setItem('auth_token', response.data.token);
+            // Исправление: поддержка userId и id, проверка на undefined
+            const userId = response.data.id || response.data.userId;
+            if (!userId) {
+                alert('Ошибка: сервер не вернул id пользователя. Обратитесь в поддержку.');
+                setAuthHeader(null);
+                this.setState({ componentToShow: "welcome" });
+                return;
+            }
+            localStorage.setItem('userId', userId);
             setAuthHeader(response.data.token);
-            if (role === 'CONSULTANT' && response.data.consultantId) {
-                window.location.href = `/consultant/${response.data.consultantId}`;
+            if (role === 'CONSULTANT' && userId) {
+                request('GET', `/consultant/by-user/${userId}`)
+                  .then(res => {
+                    localStorage.setItem('consultantId', res.data.id);
+                    window.location.href = `/consultant/${res.data.id}`;
+                  });
             } else {
                 this.setState({
                     componentToShow: "search",
@@ -137,7 +166,6 @@ export default class AppContent extends React.Component {
                             <Navigate to="/messages" /> :
                             <WelcomeContent />
                     } />
-
                     <Route path="/login" element={
                         this.state.isAuthenticated ?
                             <Navigate to="/search" /> :
@@ -155,6 +183,8 @@ export default class AppContent extends React.Component {
                     } />
                     <Route path="search" element={<SearchPage />} />
                     <Route path="/consultant/:id" element={<ConsultantPageWrapper />} />
+                    <Route path="/consultant/:id/chats" element={<ConsultantChatsPageWrapper />} />
+                    <Route path="/chat/:chatId" element={<ChatPageWrapper />} />
                 </Routes>
             </Router>
         );
@@ -162,6 +192,22 @@ export default class AppContent extends React.Component {
 }
 
 function ConsultantPageWrapper() {
-    const { id } = useParams();
+    let { id } = useParams();
+    // Use consultantId from localStorage if available
+    const consultantId = localStorage.getItem('consultantId');
+    if (consultantId) id = consultantId;
     return <ConsultantPage consultantId={id} />;
+}
+
+function ConsultantChatsPageWrapper() {
+    let { id } = useParams();
+    // Use consultantId from localStorage if available
+    const consultantId = localStorage.getItem('consultantId');
+    if (consultantId) id = consultantId;
+    return <ConsultantChatsPage consultantId={id} />;
+}
+
+function ChatPageWrapper() {
+    let { chatId } = useParams();
+    return <ChatPage chatId={chatId} />;
 }

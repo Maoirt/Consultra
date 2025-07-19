@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { request } from '../../helpers/axios_helper';
 import './ConsultantPage.css';
 import AddConsultationModal from '../Modal/AddConsultationModal'
@@ -29,6 +29,10 @@ export default function ConsultantPage({ consultantId }) {
   const [newSpecialization, setNewSpecialization] = useState("");
   const [allSpecializations, setAllSpecializations] = useState([]);
   const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  const [specInput, setSpecInput] = useState("");
+  const [specSuggestions, setSpecSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const specInputRef = useRef(null);
 
   const handleServiceAdded = (newService) => {
     setServices(prev => [...prev, newService]);
@@ -63,6 +67,19 @@ export default function ConsultantPage({ consultantId }) {
       console.log('Consultant avatarUrl from DB:', consultant.avatarUrl);
     }
   }, [consultant, consultantId]);
+
+  // Автодополнение специализаций
+  useEffect(() => {
+    if (specInput.trim().length === 0) {
+      setSpecSuggestions([]);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      request('GET', `/consultant/specializations/search?query=${encodeURIComponent(specInput)}`)
+        .then(r => setSpecSuggestions(r.data));
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [specInput]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -166,24 +183,29 @@ export default function ConsultantPage({ consultantId }) {
     }
   };
 
-  const handleAddSpecialization = async () => {
-    if (!selectedSpecialization) return;
+  const handleAddSpecialization = async (name) => {
+    if (!name) return;
+    if (specializations.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+      alert('Эта специализация уже добавлена');
+      return;
+    }
     try {
-      const specObj = allSpecializations.find(s => s.id === selectedSpecialization);
-      if (specializations.some(s => s.id === selectedSpecialization)) {
-        alert('Эта специализация уже добавлена');
-        return;
-      }
-      const response = await request('POST', `/consultant/${consultantId}/specializations`, { name: specObj.name });
+      const response = await request('POST', `/consultant/${consultantId}/specializations`, { name });
       setSpecializations(prev => [...prev, response.data]);
-      setSelectedSpecialization("");
+      setSpecInput("");
+      setShowSuggestions(false);
     } catch (error) {
       alert('Ошибка при добавлении специализации');
     }
   };
 
   const handleToProfile = (id) => {
-    window.location.href = `http://localhost:3000/consultant/${id}`;
+    const consultantId = localStorage.getItem('consultantId');
+    if (consultantId) {
+      window.location.href = `/consultant/${consultantId}`;
+    } else {
+      window.location.href = `/consultant/${id}`;
+    }
   };
 
   if (!consultant) return <div>Загрузка...</div>;
@@ -270,18 +292,34 @@ export default function ConsultantPage({ consultantId }) {
                 <ul style={{display: 'inline', paddingLeft: 0, margin: 0}}>
                   {specializations.map(s => <li key={s.id} style={{display: 'inline', marginRight: 8, listStyle: 'none', background: '#f0f0f0', borderRadius: 4, padding: '2px 8px'}}>{s.name}</li>)}
                 </ul>
-                <div style={{marginTop: 8, display: 'flex', gap: 8, alignItems: 'center'}}>
-                  <select
-                    value={selectedSpecialization}
-                    onChange={e => setSelectedSpecialization(e.target.value)}
-                    style={{padding: 4, borderRadius: 4, border: '1px solid #ccc'}}
-                  >
-                    <option value="">Выберите специализацию</option>
-                    {allSpecializations.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                  <button onClick={handleAddSpecialization} className="save-btn" style={{padding: '4px 12px'}}>Добавить</button>
+                <div className="specialization-input" style={{marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', position: 'relative'}}>
+                  <input
+                    ref={specInputRef}
+                    type="text"
+                    value={specInput}
+                    onChange={e => { setSpecInput(e.target.value); setShowSuggestions(true); }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    placeholder="Введите специализацию..."
+                    style={{padding: 8, borderRadius: 4, border: '1px solid #ccc', flex: 1}}
+                  />
+                  <button
+                    onClick={() => handleAddSpecialization(specInput)}
+                    className="add-spec-btn"
+                    style={{padding: '4px 12px'}}
+                    disabled={!specInput.trim()}
+                  >Добавить</button>
+                  {showSuggestions && specSuggestions.length > 0 && (
+                    <ul style={{position: 'absolute', top: 38, left: 0, right: 0, background: '#fff', border: '1px solid #ccc', borderRadius: 4, zIndex: 10, maxHeight: 150, overflowY: 'auto', margin: 0, padding: 0, listStyle: 'none'}}>
+                      {specSuggestions.map(s => (
+                        <li
+                          key={s.id}
+                          style={{padding: 8, cursor: 'pointer'}}
+                          onMouseDown={() => { handleAddSpecialization(s.name); }}
+                        >{s.name}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               <div>

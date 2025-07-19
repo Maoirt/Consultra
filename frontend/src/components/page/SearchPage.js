@@ -1,45 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './SearchPage.css';
 import { request } from '../../helpers/axios_helper';
-// Mock data based on the image
-const consultants = [
-  {
-    id: 1,
-    avatar: 'https://via.placeholder.com/80', 
-    name: 'Анна Петрова',
-    verified: true,
-    specialization: 'Бизнес-консультирование',
-    rating: 4.9,
-    reviews: 127,
-    location: 'Москва',
-    tags: ['Стратегия', 'Маркетинг', 'Управление'],
-    price: 3500,
-  },
-  {
-    id: 2,
-    avatar: 'https://via.placeholder.com/80',
-    name: 'Михаил Сидоров',
-    verified: true,
-    specialization: 'IT-консультации',
-    rating: 4.8,
-    reviews: 89,
-    location: 'Санкт-Петербург',
-    tags: ['Разработка', 'DevOps', 'Архитектура'],
-    price: 4500,
-  },
-  {
-    id: 3,
-    avatar: 'https://via.placeholder.com/80',
-    name: 'Елена Козлова',
-    verified: true,
-    specialization: 'Психология',
-    rating: 5,
-    reviews: 156,
-    location: 'Екатеринбург',
-    tags: ['Семейная терапия', 'Тревожность', 'Депрессия'],
-    price: 2800,
-  },
-];
+
+function isValidUUID(uuid) {
+  return typeof uuid === 'string' && /^[0-9a-fA-F-]{36}$/.test(uuid);
+}
 
 function SearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,7 +44,32 @@ function SearchPage() {
   };
 
   const handleToProfile = (id) => {
-    window.location.href = `/consultant/${id}`;
+    const consultantId = localStorage.getItem('consultantId');
+    if (consultantId && consultantId === String(id)) {
+      window.location.href = `/consultant/${consultantId}`;
+    } else {
+      window.location.href = `/consultant/${id}`;
+    }
+  };
+
+  const handleWriteMessage = (consultantId) => {
+    alert(consultantId)
+    const authToken = localStorage.getItem('auth_token');
+    if (!authToken) {
+      alert('Пожалуйста, войдите в систему, чтобы начать чат с консультантом.');
+      return;
+    }
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert('Ошибка: не найден userId. Пожалуйста, войдите заново.');
+      return;
+    }
+    if (!isValidUUID(consultantId)) {
+      alert('Ошибка: некорректный consultantId.');
+      return;
+    }
+    const chatId = [userId, consultantId].sort().join('-');
+    window.location.href = `/chat/${chatId}`;
   };
 
   return (
@@ -147,7 +137,7 @@ function SearchPage() {
         </header>
 
         <div className="consultant-list">
-          {(Array.isArray(consultants) ? consultants : []).map(consultant => (
+          {(Array.isArray(consultants) ? consultants : []).filter(c => isValidUUID(c.id)).map(consultant => (
             <div key={consultant.id} className="consultant-card">
               <div className="card-main-content">
                 <div className="card-left">
@@ -176,7 +166,13 @@ function SearchPage() {
               </div>
               <div className="card-actions">
                 <button className="btn btn-dark btn-block mb-" onClick={() => handleToProfile(consultant.id)}>Посмотреть профиль</button>
-                <button className="write-message-btn">Написать</button>
+                <button
+                  className="write-message-btn"
+                  onClick={() => handleWriteMessage(consultant.id)}
+                  disabled={!isValidUUID(consultant.id)}
+                >
+                  Написать
+                </button>
               </div>
             </div>
           ))}

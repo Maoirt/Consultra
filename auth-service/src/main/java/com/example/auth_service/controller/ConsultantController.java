@@ -1,6 +1,7 @@
 package com.example.auth_service.controller;
 
 import com.example.auth_service.model.*;
+import com.example.auth_service.repository.ConsultantRepository;
 import com.example.auth_service.service.ConsultantService;
 import com.example.auth_service.dto.SpecializationDto;
 import com.example.auth_service.repository.ConsultantSpecializationRepository;
@@ -18,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,6 +37,7 @@ public class ConsultantController {
     private final ConsultantService consultantService;
     private final ConsultantSpecializationRepository consultantSpecializationRepository;
     private final UserRepository userRepository;
+    private final ConsultantRepository consultantRepository;
 
     @Value("${app.upload.avatar.path}")
     private String uploadDir;
@@ -244,6 +247,11 @@ public class ConsultantController {
         return ResponseEntity.ok(consultantSpecializationRepository.findAll());
     }
 
+    @GetMapping("/specializations/search")
+    public ResponseEntity<List<ConsultantSpecialization>> searchSpecializations(@RequestParam("query") String query) {
+        return ResponseEntity.ok(consultantSpecializationRepository.findByNameContainingIgnoreCase(query));
+    }
+
     @GetMapping("/professions")
     public ResponseEntity<List<String>> getAllProfessions() {
         return ResponseEntity.ok(consultantService.findAllProfessions());
@@ -256,5 +264,14 @@ public class ConsultantController {
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice) {
         return ResponseEntity.ok(consultantService.searchConsultants(profession, specializationId, minPrice, maxPrice));
+    }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<ConsultantProfileDto> getConsultantByUserId(@PathVariable UUID userId) {
+        Consultant consultant = consultantRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        User user = userRepository.findById(consultant.getUserId()).orElse(null);
+        ConsultantProfileDto dto = ConsultantProfileMapper.toDto(consultant, user);
+        return ResponseEntity.ok(dto);
     }
 } 

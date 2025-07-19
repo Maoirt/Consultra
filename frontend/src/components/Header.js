@@ -20,6 +20,12 @@ export default function Header(props) {
         navigate('/registration');
     };
 
+    // Получаем consultantId из localStorage (сохраняется при логине/регистрации)
+    const consultantId = localStorage.getItem('consultantId');
+    console.log('Header: consultantId =', consultantId);
+    const profileLink = consultantId ? `/consultant/${consultantId}` : '/consultant/:id';
+    const chatsLink = consultantId ? `/consultant/${consultantId}/chats` : '/consultant/:id/chats';
+
     return (
         <header className="App-header d-flex align-items-center">
             <Link to="/" className="App-title ms-5" 
@@ -38,7 +44,8 @@ export default function Header(props) {
                         <MDBDropdownMenu>
                             <MDBDropdownItem>
                                 <Link to="/search" className="dropdown-item">Поиск</Link>
-                                <Link to="/consultant/:id" className="dropdown-item">Профиль</Link>
+                                <Link to={profileLink} className="dropdown-item">Профиль</Link>
+                                <Link to={chatsLink} className="dropdown-item">Чаты</Link>
                             </MDBDropdownItem>
                         </MDBDropdownMenu>
                     </MDBDropdown>

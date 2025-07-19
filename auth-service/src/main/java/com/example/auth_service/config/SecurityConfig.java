@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/**", "/verify-email/**").permitAll()
                         .requestMatchers("/consultant/*/documents/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/consultant/*/images/*").permitAll()
+                        .requestMatchers("/ws-chat/**").permitAll()
                         .anyRequest().authenticated()
                 )
 //                .oauth2Login(oauth2 -> oauth2

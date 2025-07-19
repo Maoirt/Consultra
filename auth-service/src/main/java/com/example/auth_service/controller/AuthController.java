@@ -75,6 +75,7 @@ public class AuthController {
         response.put("token", user.getToken());
         response.put("email", user.getEmail());
         response.put("role", signUpDto.getRole());
+        response.put("id", user.getId());
 
         if ("CONSULTANT".equalsIgnoreCase(signUpDto.getRole())) {
             consultantRepository.findByUserId(user.getId()).ifPresent(consultant ->
