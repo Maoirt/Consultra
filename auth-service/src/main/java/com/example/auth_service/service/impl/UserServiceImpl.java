@@ -129,4 +129,28 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserException("User not found", HttpStatus.NOT_FOUND));
         return profileMapper.toUpdateProfileDto(user);
     }
+
+    @Override
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream().map(userMapper::toUserDto).toList();
+    }
+
+    @Override
+    public void deleteUser(UUID id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public void setUserBlocked(UUID id, boolean blocked) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found", HttpStatus.NOT_FOUND));
+        user.setBlocked(blocked);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changeUserRole(UUID id, String role) {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found", HttpStatus.NOT_FOUND));
+        user.setRole(User.UserRole.valueOf(role.toUpperCase()));
+        userRepository.save(user);
+    }
 }

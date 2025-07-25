@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/myvault}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:maoirt}
 app:
   upload:
     base-path: ./uploads

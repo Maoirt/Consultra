@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Data
@@ -31,9 +33,15 @@ public class User {
     private String verificationToken;
     private String resetToken;
     private LocalDateTime resetTokenExpiration;
+    private boolean isBlocked;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
     @Transient
     private boolean enable;
     @Transient
     private boolean tokenExpired;
 
+    public enum UserRole {
+        ADMIN, USER, CONSULTANT
+    }
 }

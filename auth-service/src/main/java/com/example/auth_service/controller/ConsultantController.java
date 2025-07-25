@@ -20,6 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,7 +36,9 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/consultant")
 @RequiredArgsConstructor
+@Tag(name = "ConsultantController", description = "Контроллер для управления консультантами")
 public class ConsultantController {
+    private static final Logger log = LoggerFactory.getLogger(ConsultantController.class);
     private final ConsultantService consultantService;
     private final ConsultantSpecializationRepository consultantSpecializationRepository;
     private final UserRepository userRepository;
@@ -47,17 +52,20 @@ public class ConsultantController {
 
     @PostMapping("/{id}/consultation")
     public ResponseEntity<ConsultantServices> addConsultation(@PathVariable UUID id, @RequestBody ConsultantServices service){
+        log.info("POST /consultant/{}/consultation", id);
         return ResponseEntity.ok(consultantService.addService(id, service));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerConsultant(@RequestParam UUID userId, @RequestBody Consultant consultant, @RequestParam List<UUID> specializationIds) {
+        log.info("POST /consultant/register - userId: {}", userId);
         Consultant saved = consultantService.registerConsultant(userId, consultant, specializationIds);
         return ResponseEntity.created(URI.create("/consultant/" + saved.getId())).body(saved);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ConsultantProfileDto> getConsultant(@PathVariable UUID id) {
+        log.info("GET /consultant/{}", id);
         Consultant consultant = consultantService.getConsultant(id);
         User user = userRepository.findById(consultant.getUserId()).orElse(null);
         ConsultantProfileDto dto = ConsultantProfileMapper.toDto(consultant, user);
@@ -66,6 +74,7 @@ public class ConsultantController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Consultant> updateConsultant(@PathVariable UUID id, @RequestBody Consultant consultant, @RequestParam(required = false) List<UUID> specializationIds) {
+        log.info("PUT /consultant/{}", id);
         if (specializationIds == null) {
             specializationIds = List.of();
         }
@@ -74,6 +83,7 @@ public class ConsultantController {
 
     @PutMapping("/{id}/profile")
     public ResponseEntity<Consultant> updateProfile(@PathVariable UUID id, @RequestBody Consultant consultant) {
+        log.info("PUT /consultant/{}/profile", id);
         Consultant existing = consultantService.getConsultant(id);
         existing.setCity(consultant.getCity());
         existing.setExperienceYears(consultant.getExperienceYears());

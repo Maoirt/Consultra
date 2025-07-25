@@ -19,3 +19,7 @@ databaseChangeLog:
       file: db/changelog/changeset/add-profession-to-consultant-table.sql
   - include:
       file: db/changelog/changeset/create-chat_message-table.sql
+  - include:
+      file: db/changelog/changeset/add-role-to-user-table.sql
+  - include:
+      file: db/changelog/changeset/add-isblocked-to-user-table.sql

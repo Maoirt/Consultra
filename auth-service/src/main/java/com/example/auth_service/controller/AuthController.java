@@ -28,12 +28,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import com.example.auth_service.repository.ConsultantRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "AuthController Controller", description = "Контроллер для авторизации и регистрации")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final UserServiceImpl userService;
     private final UserAuthProvider userAuthProvider;
     private final VerificationServiceImpl verificationService;
@@ -51,9 +54,14 @@ public class AuthController {
             )
             @RequestBody CredentialsDto credentialsDto) {
 
+       log.info("POST /login - email: {}", credentialsDto.getEmail());
        UserDto user = userService.login(credentialsDto);
-       user.setToken(userAuthProvider.createToken(user.getEmail()));
+        user.setToken(userAuthProvider.createToken(
+                user.getEmail(),
+                User.UserRole.valueOf(user.getRole())
+        ));
 
+       log.info("User logged in: {}", user.getEmail());
        return ResponseEntity.ok(user);
     }
 
@@ -68,8 +76,12 @@ public class AuthController {
             )
             @RequestBody SignUpDto signUpDto) {
 
+        log.info("POST /register - email: {}", signUpDto.getEmail());
         UserDto user = userService.register(signUpDto);
-        user.setToken(userAuthProvider.createToken(user.getEmail()));
+        user.setToken(userAuthProvider.createToken(
+                user.getEmail(),
+                User.UserRole.valueOf(user.getRole())
+        ));
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", user.getToken());
@@ -83,21 +95,25 @@ public class AuthController {
             );
         }
 
+        log.info("User registered: {} with role {}", user.getEmail(), signUpDto.getRole());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verify-email")
     @CrossOrigin(origins = "http://localhost:3000")
     public String verifyEmail(@RequestParam("token") String token, Model model) {
+        log.info("POST /verify-email - token: {}", token);
         String result = verificationService.validateVerificationToken(token);
         User user = userService.findByVerificationToken(token);
         user.setEnabledVerification(true);
         userService.saveUser(user);
         if (result.equals("valid")) {
             model.addAttribute("message", "Your account has been verified successfully.");
+            log.info("Email verified for user: {}", user.getEmail());
             return "verified";
         } else {
             model.addAttribute("message", "Invalid verification token.");
+            log.warn("Invalid verification token: {}", token);
             return "verify-email";
         }
     }

@@ -5,13 +5,16 @@ import AuthContent from './AuthContent';
 import logo from '../logo.svg';
 import LoginForm from './form/LoginForm';
 import WelcomeContent from './WelcomeContent';
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate, Redirect } from 'react-router-dom';
 import RegistrationForm from './form/RegistrationForm';
 import ConsultantPage from './page/ConsultantPage';
 import SearchPage from './page/SearchPage';
 import ConsultantChatPage from './page/ConsultantChatsPage';
 import ConsultantChatsPage from './page/ConsultantChatsPage';
 import ChatPage from './page/ChatPage';
+import AdminPanel from './page/AdminPanel';
+import AdminRegister from './page/AdminRegister';
+import AdminLogin from './page/AdminLogin';
 
 export default class AppContent extends React.Component {
     constructor(props) {
@@ -185,6 +188,9 @@ export default class AppContent extends React.Component {
                     <Route path="/consultant/:id" element={<ConsultantPageWrapper />} />
                     <Route path="/consultant/:id/chats" element={<ConsultantChatsPageWrapper />} />
                     <Route path="/chat/:chatId" element={<ChatPageWrapper />} />
+                    <Route path="/admin" element={getUserRole() === 'ADMIN' ? <AdminPanel /> : <Navigate to="/" />} />
+                    <Route path="/admin-register" element={<AdminRegister />} />
+                    <Route path="/admin-login" element={<AdminLogin />} />
                 </Routes>
             </Router>
         );
@@ -202,12 +208,29 @@ function ConsultantPageWrapper() {
 function ConsultantChatsPageWrapper() {
     let { id } = useParams();
     // Use consultantId from localStorage if available
-    const consultantId = localStorage.getItem('consultantId');
-    if (consultantId) id = consultantId;
-    return <ConsultantChatsPage consultantId={id} />;
+    const consultantId = localStorage.getItem('consultantId') || id;
+    // Если пользователь, а не консультант, перенаправляем на первый чат
+    const userId = localStorage.getItem('userId');
+    if (!consultantId && userId) {
+        // Получаем список чатов пользователя и редиректим на первый
+        // (Можно реализовать через useEffect, но для простоты делаем window.location)
+        request('GET', `/user/${userId}/chats`).then(r => {
+            if (r.data && r.data.length > 0) {
+                const chatId = [userId, r.data[0]].sort().join('-');
+                window.location.href = `/chat/${chatId}`;
+            }
+        });
+        return null;
+    }
+    return <ConsultantChatsPage consultantId={consultantId} />;
 }
 
 function ChatPageWrapper() {
     let { chatId } = useParams();
     return <ChatPage chatId={chatId} />;
 }
+
+const getUserRole = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  return user && user.role;
+};

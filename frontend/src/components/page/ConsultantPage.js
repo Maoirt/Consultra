@@ -68,7 +68,6 @@ export default function ConsultantPage({ consultantId }) {
     }
   }, [consultant, consultantId]);
 
-  // Автодополнение специализаций
   useEffect(() => {
     if (specInput.trim().length === 0) {
       setSpecSuggestions([]);

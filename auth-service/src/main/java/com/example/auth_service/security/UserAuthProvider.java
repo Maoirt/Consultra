@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.auth_service.dto.UserDto;
+import com.example.auth_service.model.User;
 import com.example.auth_service.service.impl.UserServiceImpl;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,13 @@ public class UserAuthProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String createToken(String email){
+    public String createToken(String email, User.UserRole role){
         Date now = new Date();
         Date validity = new Date(now.getTime()+ 3_600_000);
 
         return JWT.create()
                 .withIssuer(email)
+                .withClaim("role", role.name())
                 .withIssuedAt(now)
                 .withExpiresAt(validity)
                 .sign(Algorithm.HMAC256(secretKey));
@@ -46,7 +48,8 @@ public class UserAuthProvider {
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(secretKey)).build();
         DecodedJWT decodedJWT = jwtVerifier.verify(token);
         UserDto user = userService.findByEmail(decodedJWT.getIssuer());
-
+        String role = decodedJWT.getClaim("role").asString();
+        // Можно добавить проверку соответствия роли
         return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
     }
 }

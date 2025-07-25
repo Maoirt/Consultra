@@ -17,5 +17,6 @@ public class UserDto {
     private UUID id;
     private String email;
     private String token;
+    private String role;
 
 }

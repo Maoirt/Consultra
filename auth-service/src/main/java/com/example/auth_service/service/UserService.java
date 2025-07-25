@@ -2,6 +2,7 @@ package com.example.auth_service.service;
 
 import com.example.auth_service.dto.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,4 +51,9 @@ public interface UserService {
      * @return профиль пользователя
      */
     UpdateProfileDto getUserProfile(String email);
+
+    List<UserDto> getAllUsers();
+    void deleteUser(UUID id);
+    void setUserBlocked(UUID id, boolean blocked);
+    void changeUserRole(UUID id, String role);
 }

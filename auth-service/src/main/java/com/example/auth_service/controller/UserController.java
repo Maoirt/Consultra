@@ -3,18 +3,32 @@ package com.example.auth_service.controller;
 
 import com.example.auth_service.dto.UpdateProfileDto;
 import com.example.auth_service.dto.UserDto;
+import com.example.auth_service.mapper.UserMapper;
+import com.example.auth_service.model.User;
+import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "UserController", description = "Контроллер для управления пользователями")
 public class UserController {
 
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @GetMapping("/profile")
     @CrossOrigin(origins = "http://localhost:3000")
@@ -25,7 +39,7 @@ public class UserController {
         } else {
             currentEmail = authentication.getName();
         }
-        
+        log.info("GET /api/users/profile - email: {}", currentEmail);
         UpdateProfileDto userProfile = userService.getUserProfile(currentEmail);
         return ResponseEntity.ok(userProfile);
     }
@@ -33,8 +47,8 @@ public class UserController {
     @PutMapping("/profile")
     @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<UpdateProfileDto> updateProfile(@RequestBody UpdateProfileDto userDto, Authentication authentication) {
-        System.out.println("Received update profile request for user: " + authentication.getName());
-        System.out.println("Data: " + userDto);
+        log.info("PUT /api/users/profile - email: {}", authentication.getName());
+        log.debug("Update data: {}", userDto);
         
         // Extract email from the authenticated principal (UserDto object)
         String currentEmail;
