@@ -16,7 +16,7 @@ const AdminLogin = () => {
       if (res.data.role === 'ADMIN') {
         setAuthHeader(res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data));
-        localStorage.setItem('userId', res.data.id); // сохраняем userId
+        localStorage.setItem('userId', res.data.id);
         setMessage('Вход выполнен. Добро пожаловать, админ!');
         window.location.href = '/admin';
       } else {

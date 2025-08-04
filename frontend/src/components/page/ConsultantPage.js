@@ -8,7 +8,7 @@ const TABS = [
   { key: 'services', label: 'Услуги' },
   { key: 'reviews', label: 'Отзывы' },
   { key: 'documents', label: 'Документы' },
-  //{ key: 'cases', label: 'Кейсы' },
+
 ];
 
 export default function ConsultantPage({ consultantId }) {
@@ -32,6 +32,7 @@ export default function ConsultantPage({ consultantId }) {
   const [specInput, setSpecInput] = useState("");
   const [specSuggestions, setSpecSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const specInputRef = useRef(null);
 
   const handleServiceAdded = (newService) => {
@@ -44,7 +45,6 @@ export default function ConsultantPage({ consultantId }) {
 
   useEffect(() => {
     request('GET', `/consultant/${consultantId}`).then(r => {
-      console.log('Loaded consultant data:', r.data);
       setConsultant(r.data);
       setEditForm({
         city: r.data.city || '',
@@ -52,6 +52,11 @@ export default function ConsultantPage({ consultantId }) {
         about: r.data.about || '',
         profession: r.data.profession || ''
       });
+      
+
+      const currentUserId = localStorage.getItem('userId');
+      const consultantUserId = r.data.userId;
+      setIsOwner(currentUserId === consultantUserId);
     });
     request('GET', `/consultant/${consultantId}/services`).then(r => setServices(r.data));
     request('GET', `/consultant/${consultantId}/reviews`).then(r => setReviews(r.data));
@@ -62,9 +67,7 @@ export default function ConsultantPage({ consultantId }) {
 
   useEffect(() => {
     if (consultant) {
-      const avatarUrl = consultant.avatarUrl ? `http://localhost:8081${consultant.avatarUrl}` : '/default-avatar.png';
-      console.log('Avatar URL:', avatarUrl);
-      console.log('Consultant avatarUrl from DB:', consultant.avatarUrl);
+              const avatarUrl = consultant.avatarUrl ? `http://localhost:8080${consultant.avatarUrl}` : '/default-avatar.png';
     }
   }, [consultant, consultantId]);
 
@@ -149,10 +152,9 @@ export default function ConsultantPage({ consultantId }) {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      console.log('Uploading avatar for consultant:', consultantId);
-      console.log('Selected file:', selectedFile.name, selectedFile.size, selectedFile.type);
 
-      const response = await fetch(`http://localhost:8081/consultant/${consultantId}/avatar`, {
+
+              const response = await fetch(`http://localhost:8080/consultant/${consultantId}/avatar`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -160,13 +162,10 @@ export default function ConsultantPage({ consultantId }) {
         }
       });
 
-      console.log('Upload response status:', response.status);
       const responseText = await response.text();
-      console.log('Upload response:', responseText);
 
       if (response.ok) {
         const consultantResponse = await request('GET', `/consultant/${consultantId}`);
-        console.log('Updated consultant data:', consultantResponse.data);
         setConsultant(consultantResponse.data);
         setSelectedFile(null);
         setPreviewUrl(null);
@@ -213,7 +212,7 @@ export default function ConsultantPage({ consultantId }) {
   return (
     
     <div className="consultant-page">
-      {console.log('Modal active state:', modalActive)}
+
       <AddConsultationModal 
                 active={modalActive}
                 setActive={setModalActive}
@@ -230,9 +229,9 @@ export default function ConsultantPage({ consultantId }) {
         <div className="avatar-section">
           <img 
             className="avatar" 
-            src={previewUrl || (consultant.avatarUrl ? `http://localhost:8081${consultant.avatarUrl}` : '/default-avatar.png')} 
+                            src={previewUrl || (consultant.avatarUrl ? `http://localhost:8080${consultant.avatarUrl}` : '/default-avatar.png')} 
             alt="avatar" 
-            onLoad={() => console.log('Avatar loaded successfully')}
+            onLoad={() => {}}
             onError={(e) => {
               console.error('Error loading avatar:', e.target.src);
               console.error('Error details:', e);
@@ -347,8 +346,10 @@ export default function ConsultantPage({ consultantId }) {
               </div>
               <div>Профессия: {consultant.profession || '-'}</div>
               <div>Консультаций: Проведено 0 консультаций</div>
-              <div>Рейтинг: {/* TODO: rating */}</div>
-              <button onClick={handleEdit} className="edit-btn">Редактировать</button>
+              <div>Рейтинг: —</div>
+              {isOwner && (
+                <button onClick={handleEdit} className="edit-btn">Редактировать</button>
+              )}
             </div>
           )}
         </div>
@@ -382,11 +383,10 @@ export default function ConsultantPage({ consultantId }) {
             <ul>
               {services.map(s => <li key={s.id}>{s.name} — {s.price}₽<br/>{s.description}</li>)}
             </ul>
-            {isEditing && (
+            {isEditing && isOwner && (
               <div>
                 <button 
                   onClick={() => {
-                    console.log('Button clicked, setting modalActive to true');
                     setModalActive(true);
                   }} 
                   className="save-btn"
@@ -411,7 +411,7 @@ export default function ConsultantPage({ consultantId }) {
                 return (
                   <li key={d.id}>
                     <a
-                      href={`http://localhost:8081${d.fileUrl}`}
+                                              href={`http://localhost:8080${d.fileUrl}`}
                       download={fileName}
                     >
                       {d.name || fileName}
@@ -422,7 +422,7 @@ export default function ConsultantPage({ consultantId }) {
                 );
               })}
             </ul>
-            {isEditing && (
+            {isEditing && isOwner && (
               <div>
                 <button 
                   onClick={() => setModalDocumentActive(true)}

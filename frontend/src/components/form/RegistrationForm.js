@@ -30,12 +30,10 @@ export default class RegistrationForm extends React.Component {
   };
 
   onSubmitRegistrationUser = (e) => {
-    console.log("Registering user:", this.state.email, this.state.password);
     this.state.onRegister(e, this.state.email, this.state.firstName, this.state.lastName, this.state.phone, this.state.password, 'USER');
   };
 
   onSubmitRegistrationConsultant = (e) => {
-    console.log("Registering user:", this.state.email, this.state.password);
     this.state.onRegister(e, this.state.email, this.state.firstName, this.state.lastName, this.state.phone, this.state.password, 'CONSULTANT');
   };
 
@@ -43,7 +41,7 @@ export default class RegistrationForm extends React.Component {
     const email = event.target.value;
     this.setState({ email });
     if (email && email.includes('@gmail.com')) {
-      fetch('http://localhost:8081/send-verification-code', {
+      fetch('http://localhost:8080/send-verification-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +66,7 @@ export default class RegistrationForm extends React.Component {
     this.setState({ verificationCode });
     
     if (verificationCode.length === 6) {
-      fetch('http://localhost:8081/verify-code', {
+      fetch('http://localhost:8080/verify-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

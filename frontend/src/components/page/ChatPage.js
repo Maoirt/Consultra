@@ -5,18 +5,18 @@ import { Client } from '@stomp/stompjs';
 import { useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
-const WS_URL = 'http://localhost:8081/ws-chat';
+const WS_URL = 'http://localhost:8080/ws-chat';
 
 function getChatId(userId, consultantId) {
   return [userId, consultantId].sort().join('-');
 }
 
 function parseChatId(chatId, userId) {
-  if (!chatId || chatId.length < 73) return null;
-  const id1 = chatId.slice(0, 36);
-  const id2 = chatId.slice(37, 73);
-  if (userId === id1) return id2;
-  if (userId === id2) return id1;
+  const parts = chatId.split('-');
+  const id1 = parts[0];
+  const id2 = parts[1];
+  
+  // определяем, какой ID принадлежит пользователю
   return id2;
 }
 function isValidUUID(uuid) {
@@ -30,41 +30,43 @@ export default function ChatPage({ chatId: propChatId }) {
   const initialConsultantId = chatIdFromUrl && userId ? parseChatId(chatIdFromUrl, userId) : null;
   const [selectedConsultantId, setSelectedConsultantId] = useState(initialConsultantId);
   const [chats, setChats] = useState([]);
-  const [messagesByChat, setMessagesByChat] = useState({}); // chatId -> messages[]
+  const [messagesByChat, setMessagesByChat] = useState({});
   const [input, setInput] = useState('');
   const [consultantMap, setConsultantMap] = useState({});
   const [singleConsultant, setSingleConsultant] = useState(null);
   const stompClient = useRef(null);
   const messagesEndRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [loadedChats, setLoadedChats] = useState({}); // chatId -> true/false
+  const [loadedChats, setLoadedChats] = useState({});
 
   useEffect(() => {
     if (!userId) return;
     request('GET', `/user/${userId}/chats`).then(r => {
-      setChats(r.data);
-      if (r.data.length > 0 && !selectedConsultantId) {
-        setSelectedConsultantId(r.data[0]);
+
+      const chatIds = r.data.chatIds || [];
+      setChats(chatIds);
+      if (chatIds.length > 0 && !selectedConsultantId) {
+        setSelectedConsultantId(chatIds[0]);
       }
-      Promise.all(r.data.map(cid => request('GET', `/consultant/${cid}`)))
+      Promise.all(chatIds.map(cid => request('GET', `/consultant/${cid}`)))
         .then(resArr => {
           const map = {};
           resArr.forEach(res => { map[res.data.id] = res.data; });
           setConsultantMap(map);
+        })
+        .catch(error => {
+          // ошибка загрузки данных консультанта
         });
+    }).catch(error => {
+      setChats([]);
     });
   }, [userId]);
 
-  useEffect(() => {
-    if (selectedConsultantId) {
-      console.log('selectedConsultantId updated:', selectedConsultantId);
-    }
-  }, [selectedConsultantId]);
+
 
   useEffect(() => {
     if (!selectedConsultantId && chats.length > 0) {
       setSelectedConsultantId(chats[0]);
-      console.log('Fallback: setSelectedConsultantId from chats:', chats[0]);
     }
   }, [chats, selectedConsultantId]);
 
@@ -82,8 +84,7 @@ export default function ChatPage({ chatId: propChatId }) {
       alert('Ошибка: userId невалидный!');
       return;
     }
-    console.log('userId:', userId, 'selectedConsultantId:', selectedConsultantId);
-    console.log('WebSocket subscribe to:', `/user/${userId}/queue/messages`);
+
     const socket = new SockJS(WS_URL);
     const client = new Client({
       webSocketFactory: () => socket,
@@ -99,7 +100,7 @@ export default function ChatPage({ chatId: propChatId }) {
         const chatId = message.chatId;
         setMessagesByChat(prev => {
           const existingMessages = prev[chatId] || [];
-          // Проверяем, нет ли дубликатов сообщения
+
           const isDuplicate = existingMessages.some(m => m.id === message.id || m.tempId === message.tempId);
           if (!prev[chatId]) {
             setLoadedChats(loaded => ({ ...loaded, [chatId]: true }));
@@ -112,8 +113,13 @@ export default function ChatPage({ chatId: propChatId }) {
         });
       });
     };
-    client.onDisconnect = () => setIsConnected(false);
-    client.onStompError = () => setIsConnected(false);
+    client.onDisconnect = () => {
+      setIsConnected(false);
+    };
+    client.onStompError = (error) => {
+      console.error('WebSocket STOMP error:', error);
+      setIsConnected(false);
+    };
     client.activate();
     stompClient.current = client;
     return () => client.deactivate();
@@ -171,7 +177,7 @@ export default function ChatPage({ chatId: propChatId }) {
     try {
       stompClient.current.publish({ destination: '/app/chat.sendMessage', body: JSON.stringify(msg) });
     } catch (e) {
-      alert('Ошибка отправки сообщения. Попробуйте ещё раз.');
+      alert('Ошибка отправки сообщения. Попробуйте ещё раз.'); // TODO: улучшить обработку ошибок
     }
   };
 
@@ -228,7 +234,7 @@ export default function ChatPage({ chatId: propChatId }) {
             <div style={{ padding: 24, borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 16 }}>
               {currentConsultant && (
                 <>
-                  <img src={currentConsultant.avatarUrl ? `http://localhost:8081${currentConsultant.avatarUrl}` : '/default-avatar.png'} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%' }} />
+                  <img src={currentConsultant.avatarUrl ? `http://localhost:8080${currentConsultant.avatarUrl}` : '/default-avatar.png'} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%' }} />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 18 }}>{(currentConsultant.firstName || currentConsultant.lastName) ? `${currentConsultant.firstName || ''} ${currentConsultant.lastName || ''}`.trim() : (currentConsultant.name || 'Имя не указано')}</div>
                     <div style={{ color: '#888', fontSize: 14 }}>{currentConsultant.profession || ''}</div>

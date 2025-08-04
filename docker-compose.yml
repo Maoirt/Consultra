@@ -3,20 +3,60 @@ services:
   auth-service:
     build: ./auth-service
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
-      - notification-service
+      db:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/consultra
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=maoirt
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8081
+    networks:
+      - app-network
   notification-service:
     build: ./notification-service
     ports:
-      - "8081:8081"
+      - "8083:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - EMAIL_USERNAME=maoirtx77@gmail.com
+      - EMAIL_PASSWORD=kzyu lpcs ywqt khzk
+    networks:
+      - app-network
   frontend:
     build: ./frontend
     ports:
       - "3000:80"
     depends_on:
-      - auth-service 
+      - auth-service
+    networks:
+      - app-network
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_DB=consultra
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=maoirt
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d consultra"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

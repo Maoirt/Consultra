@@ -60,15 +60,10 @@ public class SecurityConfig {
                         .requestMatchers("/consultant/*/documents/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/consultant/*/images/*").permitAll()
                         .requestMatchers("/ws-chat/**").permitAll()
+                        .requestMatchers("/forgot-password").permitAll()
+                        .requestMatchers("/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
-//                .oauth2Login(oauth2 -> oauth2
-//                        .userInfoEndpoint(userInfo -> userInfo
-//                                .userService(new OAuth2UserServiceAdapter(customOAuth2UserService)))
-//                        .successHandler((request, response, authentication) -> {
-//                            // Обработка успешной OAuth аутентификации
-//                        })
-//                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("http://localhost:3000")

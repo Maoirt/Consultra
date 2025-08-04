@@ -33,7 +33,7 @@ public class User {
     private String verificationToken;
     private String resetToken;
     private LocalDateTime resetTokenExpiration;
-    private boolean isBlocked;
+    private boolean blocked;
     @Enumerated(EnumType.STRING)
     private UserRole role;
     @Transient

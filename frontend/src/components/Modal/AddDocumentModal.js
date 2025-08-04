@@ -6,7 +6,6 @@ import { request } from '../../helpers/axios_helper';
 
 
 const Modal = ({ active, setActive, consultantId, onServiceAdded }) => {
-    console.log('Modal component - active:', active);
 
     const [formData, setFormData] = useState({
         name: '',

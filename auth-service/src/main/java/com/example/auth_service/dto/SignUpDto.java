@@ -44,4 +44,7 @@ public class SignUpDto {
 
     @Schema(description = "Роль пользователя (USER или CONSULTANT)", example = "CONSULTANT")
     private String role;
+
+    @Schema(description = "Имя пользователя", example = "username")
+    private String userName;
 }

@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.CharBuffer;
 import java.util.List;
@@ -36,6 +38,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+    
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -92,9 +96,7 @@ public class UserServiceImpl implements UserService {
         user.setVerificationToken(token);
         userRepository.save(user);
 
-//        String confirmationUrl = "http://localhost:8081/verify-email?token=" + token;
-//        EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Email Verification", "Click the link to verify your email: " + confirmationUrl);
-//        restTemplate.postForObject("http://localhost:8083/api/email/send-email", emailRequest, Void.class);
+
 
         return userMapper.toUserDto(user);
     }
@@ -105,7 +107,7 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException("User not found", HttpStatus.NOT_FOUND));
 
-        // Update only non-null fields
+
         if (userDto.getFirstName() != null) {
             existingUser.setFirstName(userDto.getFirstName());
         }
@@ -152,5 +154,66 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new UserException("User not found", HttpStatus.NOT_FOUND));
         user.setRole(User.UserRole.valueOf(role.toUpperCase()));
         userRepository.save(user);
+    }
+    
+    @Override
+    public boolean forgotPassword(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+        
+        User user = userOptional.get();
+        String resetToken = ActivationTokenGenerator.generateToken();
+        user.setResetToken(resetToken);
+        user.setResetTokenExpiration(java.time.LocalDateTime.now().plusHours(24));
+        userRepository.save(user);
+        
+
+        String resetUrl = "http://localhost:3000/reset-password?token=" + resetToken;
+        String subject = "Сброс пароля";
+        String body = String.format(
+            "Здравствуйте, %s!\n\n" +
+            "Вы запросили сброс пароля для вашего аккаунта.\n\n" +
+            "Для сброса пароля перейдите по ссылке:\n%s\n\n" +
+            "Ссылка действительна в течение 24 часов.\n\n" +
+            "Если вы не запрашивали сброс пароля, проигнорируйте это письмо.\n\n" +
+            "С уважением,\nКоманда Consultra",
+            user.getFirstName() != null ? user.getFirstName() : "пользователь",
+            resetUrl
+        );
+        
+                    try {
+                EmailRequest emailRequest = new EmailRequest(email, subject, body);
+                restTemplate.postForObject("http://localhost:8081/api/email/send-email", emailRequest, Void.class);
+                return true;
+            } catch (Exception e) {
+                log.error("Error sending reset password email to {}", email, e);
+                return false;
+            }
+    }
+    
+    @Override
+    public boolean resetPassword(String token, String newPassword) {
+        Optional<User> userOptional = userRepository.findByResetToken(token);
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+        
+        User user = userOptional.get();
+        
+
+        if (user.getResetTokenExpiration() == null || 
+            user.getResetTokenExpiration().isBefore(java.time.LocalDateTime.now())) {
+            return false;
+        }
+        
+
+        user.setPassword(passwordEncoder.encode(CharBuffer.wrap(newPassword)));
+        user.setResetToken(null);
+        user.setResetTokenExpiration(null);
+        userRepository.save(user);
+        
+        return true;
     }
 }

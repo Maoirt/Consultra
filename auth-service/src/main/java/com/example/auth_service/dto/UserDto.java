@@ -18,5 +18,11 @@ public class UserDto {
     private String email;
     private String token;
     private String role;
+    private String userName;
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private Boolean isBlocked;
+    private Boolean isEnabledVerification;
 
 }

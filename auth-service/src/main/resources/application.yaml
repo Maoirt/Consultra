@@ -4,25 +4,62 @@ spring:
   security:
   application:
     name: AUTH-SERVICE
-
+  jpa:
+    hibernate:
+      ddl-auto: update
   datasource:
-    url: ${AUTH_DB_URL:jdbc:postgresql://localhost:5432/myvault}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:maoirt}
+    url: jdbc:postgresql://localhost:5432/consultra
+    username: postgres
+    password: maoirt
+    schema: public
+    liquibase:
+      default-schema: public
+    logging:
+      level:
+        liquibase: DEBUG
+  profiles:
+    active: dev
+
+notification:
+  service:
+    url: http://localhost:8081
+
 app:
   upload:
     base-path: ./uploads
     avatar:
       path: ./uploads/avatars
-      max-size: 2097152  # 2MB
+      max-size: 2097152
       allowed-types: [ jpg, jpeg, png, gif ]
     document:
       path: ./uploads/documents
-      max-size: 10485760  # 10MB
+      max-size: 10485760
       allowed-types: [ pdf, doc, docx, jpg, png ]
 
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:postgresql://db:5432/consultra
+    username: postgres
+    password: maoirt
+    schema: public
+    liquibase:
+      default-schema: public
+    logging:
+      level:
+        liquibase: DEBUG
+
+notification:
+  service:
+    url: http://notification-service:8081
+
+
+
 server:
-  port: 8081
+  port: 8080
 
 security:
   jwt:
@@ -35,3 +72,24 @@ openapi:
   email: "example@gmail.com"
   name: "Author"
   url: "https://authservice.ru"
+
+logging:
+  level:
+    root: INFO
+    com.example.auth_service: DEBUG
+    com.example.auth_service.controller: DEBUG
+    com.example.auth_service.service: DEBUG
+    com.example.auth_service.repository: DEBUG
+    com.example.auth_service.security: DEBUG
+    liquibase: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/auth-service.log
+    max-size: 10MB
+    max-history: 30

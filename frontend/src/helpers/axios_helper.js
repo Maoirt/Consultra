@@ -13,8 +13,8 @@ export const setAuthHeader = (token) => {
         localStorage.removeItem('auth_token');
     }
 };
-axios.defaults.baseURL = 'http://localhost:8081';
-//axios.defaults.headers.post['Content-Type'] = 'application/json';
+axios.defaults.baseURL = 'http://localhost:8080';
+
 
 export const request = (method, url, data) => {
 
@@ -23,7 +23,7 @@ export const request = (method, url, data) => {
         headers = {'Authorization': `Bearer ${getAuthToken()}`};
     }
 
-    // Если data — строка, сериализуем как JSON
+
     let sendData = data;
     if (typeof data === 'string') {
         sendData = JSON.stringify(data);

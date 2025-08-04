@@ -9,6 +9,7 @@ import com.example.auth_service.request.EmailRequest;
 import com.example.auth_service.util.ActivationTokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class SecurityServiceImpl {
 
     @Autowired
     private RestTemplate restTemplate;
+    
+    @Value("${notification.service.url:http://localhost:8083}")
+    private String notificationServiceUrl;
 
     public void sendResetLink(String email){
 
@@ -42,7 +46,7 @@ public class SecurityServiceImpl {
             String resetLink = "http://localhost:8081/reset-password?token=" + token;
 
             EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Email Verification", "Click the link to reset your password: " + resetLink);
-            restTemplate.postForObject("http://localhost:8083/api/reset-password", emailRequest, Void.class);
+            restTemplate.postForObject(notificationServiceUrl + "/api/reset-password", emailRequest, Void.class);
         }
 
     }

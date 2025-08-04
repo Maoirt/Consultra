@@ -4,12 +4,12 @@ import com.example.auth_service.dto.UserDto;
 import com.example.auth_service.model.User;
 import com.example.auth_service.security.UserAuthProvider;
 import com.example.auth_service.service.impl.UserServiceImpl;
+import com.example.auth_service.dto.response.OAuth2LoginResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,9 +17,6 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/oauth2")
@@ -35,10 +32,10 @@ public class OAuth2Controller {
     private UserServiceImpl userService;
 
     @GetMapping("/login/success")
-    public ResponseEntity<Map<String, String>> oauth2LoginSuccess(@AuthenticationPrincipal OidcUser oidcUser) {
+    public OAuth2LoginResponse oauth2LoginSuccess(@AuthenticationPrincipal OidcUser oidcUser) {
         if (oidcUser == null) {
             log.warn("OAuth2 login failed: oidcUser is null");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized123"));
+            return new OAuth2LoginResponse(null, null, "Unauthorized", false);
         }
 
         String email = oidcUser.getAttribute("email");
@@ -50,10 +47,6 @@ public class OAuth2Controller {
         UserDto user = userService.findByEmail(email);
         String token = userAuthProvider.createToken(email, User.UserRole.valueOf(user.getRole()));
 
-        Map<String, String> response = new HashMap<>();
-        response.put("token", token);
-        response.put("email", email);
-
-        return ResponseEntity.ok(response);
+        return new OAuth2LoginResponse(token, email, "OAuth2 login successful", true);
     }
 }

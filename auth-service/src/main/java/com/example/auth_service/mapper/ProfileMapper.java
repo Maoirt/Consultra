@@ -10,6 +10,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProfileMapper {
 
+    @Mapping(target = "userName", expression = "java(user.getFirstName() + \" \" + user.getLastName())")
+    @Mapping(target = "role", expression = "java(user.getRole().name())")
     UpdateProfileDto toUpdateProfileDto(User user);
 
 }

@@ -141,7 +141,7 @@ function SearchPage() {
             <div key={consultant.id} className="consultant-card">
               <div className="card-main-content">
                 <div className="card-left">
-                  <img src={consultant.avatar} alt={consultant.name} className="consultant-avatar" />
+                  <img src={consultant.avatarUrl ? `http://localhost:8080${consultant.avatarUrl}` : '/default-avatar.png'} alt={consultant.name} className="consultant-avatar" />
                 </div>
                 <div className="card-center">
                   <div className="name-wrapper">
@@ -160,7 +160,7 @@ function SearchPage() {
                   </div>
                 </div>
                 <div className="card-right">
-                  <div className="consultant-price">{consultant.price && consultant.price.toLocaleString ? consultant.price.toLocaleString() : consultant.price} ₽</div>
+                  <div className="consultant-price">{consultant.minPrice ? consultant.minPrice.toLocaleString() : 'Цена не указана'} ₽</div>
                   <div className="price-label">за консультацию</div>
                 </div>
               </div>

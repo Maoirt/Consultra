@@ -7,6 +7,8 @@ import LoginForm from './form/LoginForm';
 import WelcomeContent from './WelcomeContent';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate, Redirect } from 'react-router-dom';
 import RegistrationForm from './form/RegistrationForm';
+import ForgotPasswordForm from './form/ForgotPasswordForm';
+import ResetPasswordForm from './form/ResetPasswordForm';
 import ConsultantPage from './page/ConsultantPage';
 import SearchPage from './page/SearchPage';
 import ConsultantChatPage from './page/ConsultantChatsPage';
@@ -59,7 +61,6 @@ export default class AppContent extends React.Component {
             password: password
         }).then((response) => {
             localStorage.setItem('auth_token', response.data.token);
-            // Исправление: поддержка userId и id, проверка на undefined
             const userId = response.data.id || response.data.userId;
             if (!userId) {
                 alert('Ошибка: сервер не вернул id пользователя. Обратитесь в поддержку.');
@@ -99,7 +100,6 @@ export default class AppContent extends React.Component {
             role: role
         }).then((response) => {
             localStorage.setItem('auth_token', response.data.token);
-            // Исправление: поддержка userId и id, проверка на undefined
             const userId = response.data.id || response.data.userId;
             if (!userId) {
                 alert('Ошибка: сервер не вернул id пользователя. Обратитесь в поддержку.');
@@ -132,7 +132,7 @@ export default class AppContent extends React.Component {
      onGoogleLogin = async () => {
         try {
 
-            const response = await fetch("http://localhost:8081/oauth2/login/success", {
+            const response = await fetch("http://localhost:8080/oauth2/login/success", {
                 method: "GET",
                 credentials: "include"
             });
@@ -184,6 +184,16 @@ export default class AppContent extends React.Component {
                             <Navigate to="/messages" /> :
                             <RegistrationForm onRegister={this.onRegister} />
                     } />
+                    <Route path="/forgot-password" element={
+                        this.state.isAuthenticated ?
+                            <Navigate to="/messages" /> :
+                            <ForgotPasswordForm />
+                    } />
+                    <Route path="/reset-password" element={
+                        this.state.isAuthenticated ?
+                            <Navigate to="/messages" /> :
+                            <ResetPasswordForm />
+                    } />
                     <Route path="search" element={<SearchPage />} />
                     <Route path="/consultant/:id" element={<ConsultantPageWrapper />} />
                     <Route path="/consultant/:id/chats" element={<ConsultantChatsPageWrapper />} />
@@ -199,7 +209,6 @@ export default class AppContent extends React.Component {
 
 function ConsultantPageWrapper() {
     let { id } = useParams();
-    // Use consultantId from localStorage if available
     const consultantId = localStorage.getItem('consultantId');
     if (consultantId) id = consultantId;
     return <ConsultantPage consultantId={id} />;
@@ -207,13 +216,9 @@ function ConsultantPageWrapper() {
 
 function ConsultantChatsPageWrapper() {
     let { id } = useParams();
-    // Use consultantId from localStorage if available
     const consultantId = localStorage.getItem('consultantId') || id;
-    // Если пользователь, а не консультант, перенаправляем на первый чат
     const userId = localStorage.getItem('userId');
     if (!consultantId && userId) {
-        // Получаем список чатов пользователя и редиректим на первый
-        // (Можно реализовать через useEffect, но для простоты делаем window.location)
         request('GET', `/user/${userId}/chats`).then(r => {
             if (r.data && r.data.length > 0) {
                 const chatId = [userId, r.data[0]].sort().join('-');

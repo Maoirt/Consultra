@@ -1,7 +1,6 @@
 package com.example.notification_service.controller;
 
-//import com.example.notification_service.dto.request.EmailRequest;
-//import com.example.notification_service.service.EmailService;
+
 
 import com.example.notification_service.dto.request.EmailRequest;
 import com.example.notification_service.service.EmailService;

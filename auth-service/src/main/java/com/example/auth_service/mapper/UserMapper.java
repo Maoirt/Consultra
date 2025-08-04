@@ -11,6 +11,12 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
     @Mapping(target = "role", expression = "java(user.getRole() != null ? user.getRole().name() : null)")
+    @Mapping(target = "userName", expression = "java(user.getFirstName() + \" \" + user.getLastName())")
+    @Mapping(target = "firstName", source = "firstName")
+    @Mapping(target = "lastName", source = "lastName")
+    @Mapping(target = "phone", source = "phone")
+    @Mapping(target = "isBlocked", expression = "java(user.isBlocked())")
+    @Mapping(target = "isEnabledVerification", expression = "java(user.isEnabledVerification())")
     UserDto toUserDto(User user);
 
     @Mapping(target = "password", ignore = true)

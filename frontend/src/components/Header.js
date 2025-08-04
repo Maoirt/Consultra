@@ -20,9 +20,8 @@ export default function Header(props) {
         navigate('/registration');
     };
 
-    // Получаем consultantId из localStorage (сохраняется при логине/регистрации)
+
     const consultantId = localStorage.getItem('consultantId');
-    console.log('Header: consultantId =', consultantId);
     const profileLink = consultantId ? `/consultant/${consultantId}` : '/search';
     const chatsLink = consultantId ? `/consultant/${consultantId}/chats` : '/search';
 

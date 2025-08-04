@@ -6,6 +6,15 @@ import com.example.auth_service.security.UserAuthProvider;
 import com.example.auth_service.dto.CredentialsDto;
 import com.example.auth_service.dto.SignUpDto;
 import com.example.auth_service.dto.UserDto;
+import com.example.auth_service.dto.request.LoginRequest;
+import com.example.auth_service.dto.request.RegisterRequest;
+import com.example.auth_service.dto.request.ForgotPasswordRequest;
+import com.example.auth_service.dto.request.ResetPasswordRequest;
+import com.example.auth_service.dto.response.LoginResponse;
+import com.example.auth_service.dto.response.RegisterResponse;
+import com.example.auth_service.dto.response.VerifyEmailResponse;
+import com.example.auth_service.dto.response.ForgotPasswordResponse;
+import com.example.auth_service.dto.response.ResetPasswordResponse;
 //import com.example.auth_service.service.impl.CustomOAuth2UserService;
 import com.example.auth_service.service.impl.UserServiceImpl;
 import com.example.auth_service.service.impl.VerificationServiceImpl;
@@ -16,7 +25,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -44,17 +52,22 @@ public class AuthController {
     //private final CustomOAuth2UserService customOAuth2UserService;
 
     @PostMapping("/login")
-    @CrossOrigin(origins = "http://localhost:3000")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @Operation(summary = "Вход", description = "Позволяет войти в приложение")
-    public ResponseEntity<UserDto> login(
+    public LoginResponse login(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные о пользователе",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = CredentialsDto.class))
+                    content = @Content(schema = @Schema(implementation = LoginRequest.class))
             )
-            @RequestBody CredentialsDto credentialsDto) {
+            @RequestBody LoginRequest loginRequest) {
 
-       log.info("POST /login - email: {}", credentialsDto.getEmail());
+       log.info("POST /login - email: {}", loginRequest.getEmail());
+       
+       CredentialsDto credentialsDto = new CredentialsDto();
+       credentialsDto.setEmail(loginRequest.getEmail());
+       credentialsDto.setPassword(loginRequest.getPassword());
+       
        UserDto user = userService.login(credentialsDto);
         user.setToken(userAuthProvider.createToken(
                 user.getEmail(),
@@ -62,60 +75,139 @@ public class AuthController {
         ));
 
        log.info("User logged in: {}", user.getEmail());
-       return ResponseEntity.ok(user);
+       
+       LoginResponse response = new LoginResponse();
+       response.setToken(user.getToken());
+       response.setEmail(user.getEmail());
+       response.setRole(user.getRole());
+       response.setId(user.getId());
+       response.setUserName(user.getUserName());
+       
+       return response;
     }
 
     @PostMapping("/register")
-    @CrossOrigin(origins = "http://localhost:3000")
-    @Operation(summary = "Вход", description = "Позволяет зарегистрироваться в приложении")
-    public ResponseEntity<Map<String, Object>> register(
+    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
+    @Operation(summary = "Регистрация", description = "Позволяет зарегистрироваться в приложении")
+    public RegisterResponse register(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Данные о пользователе",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = SignUpDto.class))
+                    content = @Content(schema = @Schema(implementation = RegisterRequest.class))
             )
-            @RequestBody SignUpDto signUpDto) {
+            @RequestBody RegisterRequest registerRequest) {
 
-        log.info("POST /register - email: {}", signUpDto.getEmail());
+        log.info("POST /register - email: {}", registerRequest.getEmail());
+        
+        SignUpDto signUpDto = new SignUpDto();
+        signUpDto.setEmail(registerRequest.getEmail());
+        signUpDto.setPassword(registerRequest.getPassword());
+        signUpDto.setUserName(registerRequest.getUserName());
+        signUpDto.setFirstName(registerRequest.getFirstName());
+        signUpDto.setLastName(registerRequest.getLastName());
+        signUpDto.setPhone(registerRequest.getPhone());
+        signUpDto.setRole(registerRequest.getRole());
+        
         UserDto user = userService.register(signUpDto);
         user.setToken(userAuthProvider.createToken(
                 user.getEmail(),
                 User.UserRole.valueOf(user.getRole())
         ));
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", user.getToken());
-        response.put("email", user.getEmail());
-        response.put("role", signUpDto.getRole());
-        response.put("id", user.getId());
+        RegisterResponse response = new RegisterResponse();
+        response.setToken(user.getToken());
+        response.setEmail(user.getEmail());
+        response.setRole(registerRequest.getRole());
+        response.setId(user.getId());
 
-        if ("CONSULTANT".equalsIgnoreCase(signUpDto.getRole())) {
+        if ("CONSULTANT".equalsIgnoreCase(registerRequest.getRole())) {
             consultantRepository.findByUserId(user.getId()).ifPresent(consultant ->
-                response.put("consultantId", consultant.getId())
+                response.setConsultantId(consultant.getId())
             );
         }
 
-        log.info("User registered: {} with role {}", user.getEmail(), signUpDto.getRole());
-        return ResponseEntity.ok(response);
+        log.info("User registered: {} with role {}", user.getEmail(), registerRequest.getRole());
+        return response;
     }
 
     @PostMapping("/verify-email")
-    @CrossOrigin(origins = "http://localhost:3000")
-    public String verifyEmail(@RequestParam("token") String token, Model model) {
+    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
+    public VerifyEmailResponse verifyEmail(@RequestParam("token") String token) {
         log.info("POST /verify-email - token: {}", token);
         String result = verificationService.validateVerificationToken(token);
         User user = userService.findByVerificationToken(token);
         user.setEnabledVerification(true);
         userService.saveUser(user);
+        
+        VerifyEmailResponse response = new VerifyEmailResponse();
         if (result.equals("valid")) {
-            model.addAttribute("message", "Your account has been verified successfully.");
+            response.setMessage("Your account has been verified successfully.");
+            response.setSuccess(true);
             log.info("Email verified for user: {}", user.getEmail());
-            return "verified";
         } else {
-            model.addAttribute("message", "Invalid verification token.");
+            response.setMessage("Invalid verification token.");
+            response.setSuccess(false);
             log.warn("Invalid verification token: {}", token);
-            return "verify-email";
         }
+        return response;
+    }
+    
+    @PostMapping("/forgot-password")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
+    @Operation(summary = "Забыл пароль", description = "Отправляет письмо для сброса пароля")
+    public ForgotPasswordResponse forgotPassword(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Email пользователя",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ForgotPasswordRequest.class))
+            )
+            @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        
+        log.info("POST /forgot-password - email: {}", forgotPasswordRequest.getEmail());
+        
+        boolean success = userService.forgotPassword(forgotPasswordRequest.getEmail());
+        
+        ForgotPasswordResponse response = new ForgotPasswordResponse();
+        if (success) {
+            response.setMessage("Если указанный email существует в системе, на него будет отправлено письмо для сброса пароля.");
+            response.setSuccess(true);
+            log.info("Password reset email sent to: {}", forgotPasswordRequest.getEmail());
+        } else {
+            response.setMessage("Email не найден в системе.");
+            response.setSuccess(false);
+            log.warn("Password reset requested for non-existent email: {}", forgotPasswordRequest.getEmail());
+        }
+        
+        return response;
+    }
+    
+    @PostMapping("/reset-password")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
+    @Operation(summary = "Сброс пароля", description = "Устанавливает новый пароль по токену")
+    public ResetPasswordResponse resetPassword(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные для сброса пароля",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ResetPasswordRequest.class))
+            )
+            @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        
+        log.info("POST /reset-password - token: {}", resetPasswordRequest.getToken());
+        
+        boolean success = userService.resetPassword(resetPasswordRequest.getToken(), resetPasswordRequest.getNewPassword());
+        
+        ResetPasswordResponse response = new ResetPasswordResponse();
+        if (success) {
+            response.setMessage("Пароль успешно изменен.");
+            response.setSuccess(true);
+            log.info("Password successfully reset for token: {}", resetPasswordRequest.getToken());
+        } else {
+            response.setMessage("Недействительный или истекший токен для сброса пароля.");
+            response.setSuccess(false);
+            log.warn("Invalid or expired reset token: {}", resetPasswordRequest.getToken());
+        }
+        
+        return response;
     }
 
 

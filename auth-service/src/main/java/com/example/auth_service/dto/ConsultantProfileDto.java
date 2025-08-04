@@ -23,4 +23,5 @@ public class ConsultantProfileDto {
     private LocalDateTime createdAt;
     private String firstName;
     private String lastName;
+    private Integer minPrice;
 } 

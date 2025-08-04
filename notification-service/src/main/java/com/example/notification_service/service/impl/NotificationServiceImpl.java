@@ -19,6 +19,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public boolean sendVerificationEmail(String email, String code) {
         try {
+            log.info("Preparing to send verification email to: {} with code: {}", email, code);
+            
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
@@ -26,6 +28,7 @@ public class NotificationServiceImpl implements NotificationService {
             helper.setSubject("Email Verification Code");
             helper.setText("Your verification code is: " + code);
             
+            log.info("Sending email with content: Your verification code is: {}", code);
             mailSender.send(message);
             log.info("Verification email sent successfully to: {}", email);
             return true;

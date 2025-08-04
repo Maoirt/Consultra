@@ -40,11 +40,11 @@ export default class LoginForm extends React.Component {
   };
 
   loginGoogle = () => {
-    window.location.href = "http://localhost:8081/oauth2/authorization/google"
+    window.location.href = "http://localhost:8080/oauth2/authorization/google"
   }
 
   loginGithub = () => {
-    window.location.href = "http://localhost:8081/oauth2/authorization/github"
+    window.location.href = "http://localhost:8080/oauth2/authorization/github"
   }
 
   toggleModal = () => {
@@ -54,7 +54,7 @@ export default class LoginForm extends React.Component {
   handleResetPassword = () => {
     const { email } = this.state;
     this.toggleModal();
-    window.location.href = `http://localhost:8081/send-reset-link?email=${encodeURIComponent(email)}`;
+    window.location.href = `http://localhost:8080/send-reset-link?email=${encodeURIComponent(email)}`;
   }
 
   handleEmailChange = (event) => {
@@ -62,7 +62,7 @@ export default class LoginForm extends React.Component {
     this.setState({ email });
     alert(email)
     if (email && email.includes('@')) {
-      fetch('http://localhost:8081/send-verification-code', {
+      fetch('http://localhost:8080/send-verification-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default class LoginForm extends React.Component {
     this.setState({ verificationCode });
     
     if (verificationCode.length === 6) {
-      fetch('http://localhost:8081/verify-code', {
+      fetch('http://localhost:8080/verify-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -182,17 +182,31 @@ export default class LoginForm extends React.Component {
                 </form>
               </div>
             </div>
-            <Link 
-            to="/registration" 
-            className="lead" 
-            style={{ 
-              fontSize: 20, 
-              color: 'inherit',
-              textDecoration: 'none' 
-            }}
-          >
-            Нет аккаунта? Нажмите, чтобы Зарегистрироваться
-          </Link>
+            <div className="text-center mt-3">
+              <Link 
+                to="/forgot-password" 
+                className="lead" 
+                style={{ 
+                  fontSize: 16, 
+                  color: 'inherit',
+                  textDecoration: 'none',
+                  marginRight: '20px'
+                }}
+              >
+                Забыли пароль?
+              </Link>
+              <Link 
+                to="/registration" 
+                className="lead" 
+                style={{ 
+                  fontSize: 16, 
+                  color: 'inherit',
+                  textDecoration: 'none' 
+                }}
+              >
+                Нет аккаунта? Зарегистрироваться
+              </Link>
+            </div>
           </div>
         </div>
       </div>  

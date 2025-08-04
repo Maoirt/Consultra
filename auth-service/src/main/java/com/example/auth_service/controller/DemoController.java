@@ -1,8 +1,7 @@
 package com.example.auth_service.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.coyote.Response;
-import org.springframework.http.ResponseEntity;
+import com.example.auth_service.dto.response.DemoResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,8 +17,9 @@ public class DemoController {
     private static final Logger log = LoggerFactory.getLogger(DemoController.class);
 
     @GetMapping("/messages")
-    public ResponseEntity<List<String>> messages(){
+    public DemoResponse messages(){
         log.info("GET /messages");
-        return ResponseEntity.ok(Arrays.asList("hello", "world"));
+        List<String> messages = Arrays.asList("hello", "world");
+        return new DemoResponse(messages, messages.size());
     }
 }

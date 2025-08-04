@@ -4,34 +4,43 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { v4 as uuidv4 } from 'uuid';
 
-const WS_URL = 'http://localhost:8081/ws-chat';
+const WS_URL = 'http://localhost:8080/ws-chat';
 
 function getChatId(userId, consultantId) {
   return [userId, consultantId].sort().join('-');
 }
 
 function isValidUUID(uuid) {
+  // проверяем формат UUID
   return typeof uuid === 'string' && /^[0-9a-fA-F-]{36}$/.test(uuid);
 }
 
 export default function ConsultantChatsPage({ consultantId }) {
   const [chats, setChats] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [messagesByChat, setMessagesByChat] = useState({}); // chatId -> messages[]
+  const [messagesByChat, setMessagesByChat] = useState({});
   const [input, setInput] = useState('');
   const stompClient = useRef(null);
   const [userMap, setUserMap] = useState({});
-  const [loadedChats, setLoadedChats] = useState({}); // chatId -> true/false
+  const [loadedChats, setLoadedChats] = useState({});
 
   useEffect(() => {
     request('GET', `/consultant/${consultantId}/chats`).then(r => {
-      setChats(r.data);
-      Promise.all(r.data.map(uid => request('GET', `user/${uid}`)))
+
+      const chatIds = r.data.chatIds || [];
+      setChats(chatIds);
+      Promise.all(chatIds.map(uid => request('GET', `/api/users/${uid}`)))
         .then(users => {
           const map = {};
           users.forEach(u => { map[u.data.id] = u.data; });
           setUserMap(map);
+        })
+        .catch(error => {
+          console.error('Error loading user data:', error);
         });
+    }).catch(error => {
+      console.error('Error loading consultant chats:', error);
+      setChats([]);
     });
   }, [consultantId]);
 
@@ -54,7 +63,8 @@ export default function ConsultantChatsPage({ consultantId }) {
         const chatId = message.chatId;
         setMessagesByChat(prev => {
           const existingMessages = prev[chatId] || [];
-          // Проверяем, нет ли дубликатов сообщения
+
+          // проверяем дубликаты
           const isDuplicate = existingMessages.some(m => m.id === message.id || m.tempId === message.tempId);
           if (!prev[chatId]) {
             setLoadedChats(loaded => ({ ...loaded, [chatId]: true }));

@@ -9,6 +9,18 @@ import com.example.auth_service.dto.ConsultantProfileDto;
 import com.example.auth_service.mapper.ConsultantProfileMapper;
 import com.example.auth_service.model.User;
 import com.example.auth_service.repository.UserRepository;
+import com.example.auth_service.dto.request.ConsultantRegisterRequest;
+import com.example.auth_service.dto.request.ConsultantUpdateRequest;
+import com.example.auth_service.dto.request.ConsultantServiceRequest;
+import com.example.auth_service.dto.request.ConsultantDocumentRequest;
+import com.example.auth_service.dto.request.ConsultantReviewRequest;
+import com.example.auth_service.dto.request.ConsultantSearchRequest;
+import com.example.auth_service.dto.response.ConsultantResponse;
+import com.example.auth_service.dto.response.ConsultantServiceResponse;
+import com.example.auth_service.dto.response.ConsultantDocumentResponse;
+import com.example.auth_service.dto.response.ConsultantReviewResponse;
+import com.example.auth_service.dto.response.ConsultantSpecializationResponse;
+import com.example.auth_service.dto.response.FileUploadResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -32,6 +44,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/consultant")
@@ -51,84 +64,270 @@ public class ConsultantController {
     private String uploadDirDoc;
 
     @PostMapping("/{id}/consultation")
-    public ResponseEntity<ConsultantServices> addConsultation(@PathVariable UUID id, @RequestBody ConsultantServices service){
-        log.info("POST /consultant/{}/consultation", id);
-        return ResponseEntity.ok(consultantService.addService(id, service));
+    public ConsultantServiceResponse addConsultation(@PathVariable UUID id, @RequestBody ConsultantServiceRequest serviceRequest){
+        log.info("POST /consultant/{}/consultation - Request: name={}, description={}, price={}", 
+                id, serviceRequest.getName(), serviceRequest.getDescription(), serviceRequest.getPrice());
+        
+        try {
+            ConsultantServices service = new ConsultantServices();
+            service.setName(serviceRequest.getName());
+            service.setDescription(serviceRequest.getDescription());
+            service.setPrice(serviceRequest.getPrice());
+            service.setConsultantId(id);
+            
+            log.debug("Creating service for consultant {}: {}", id, service);
+            ConsultantServices savedService = consultantService.addService(id, service);
+            log.info("Service created successfully for consultant {}: {}", id, savedService.getId());
+            
+            ConsultantServiceResponse response = ConsultantServiceResponse.builder()
+                    .id(savedService.getId())
+                    .name(savedService.getName())
+                    .description(savedService.getDescription())
+                    .price(savedService.getPrice())
+                    .consultantId(savedService.getConsultantId())
+                    .build();
+            
+            log.debug("Returning service response: {}", response);
+            return response;
+        } catch (Exception e) {
+            log.error("Error creating consultation for consultant {}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerConsultant(@RequestParam UUID userId, @RequestBody Consultant consultant, @RequestParam List<UUID> specializationIds) {
-        log.info("POST /consultant/register - userId: {}", userId);
-        Consultant saved = consultantService.registerConsultant(userId, consultant, specializationIds);
-        return ResponseEntity.created(URI.create("/consultant/" + saved.getId())).body(saved);
+    public ConsultantResponse registerConsultant(@RequestBody ConsultantRegisterRequest request) {
+        log.info("POST /consultant/register - userId: {}, city: {}, profession: {}, experienceYears: {}", 
+                request.getUserId(), request.getCity(), request.getProfession(), request.getExperienceYears());
+        
+        try {
+            Consultant consultant = new Consultant();
+            consultant.setUserId(request.getUserId());
+            consultant.setCity(request.getCity());
+            consultant.setExperienceYears(request.getExperienceYears());
+            consultant.setAbout(request.getAbout());
+            consultant.setProfession(request.getProfession());
+            
+            log.debug("Registering consultant with specializations: {}", request.getSpecializationIds());
+            Consultant saved = consultantService.registerConsultant(request.getUserId(), consultant, request.getSpecializationIds());
+            log.info("Consultant registered successfully: {}", saved.getId());
+            
+            User user = userRepository.findById(saved.getUserId()).orElse(null);
+            if (user == null) {
+                log.warn("User not found for consultant {}: {}", saved.getId(), saved.getUserId());
+            }
+            
+            ConsultantResponse response = ConsultantResponse.builder()
+                    .id(saved.getId())
+                    .userId(saved.getUserId())
+                    .city(saved.getCity())
+                    .experienceYears(saved.getExperienceYears())
+                    .about(saved.getAbout())
+                    .avatarUrl(saved.getAvatarUrl())
+                    .profession(saved.getProfession())
+                    .firstName(user != null ? user.getFirstName() : null)
+                    .lastName(user != null ? user.getLastName() : null)
+                    .build();
+            
+            log.debug("Returning consultant response: {}", response);
+            return response;
+        } catch (Exception e) {
+            log.error("Error registering consultant for user {}: {}", request.getUserId(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ConsultantProfileDto> getConsultant(@PathVariable UUID id) {
+    public ConsultantResponse getConsultant(@PathVariable UUID id) {
         log.info("GET /consultant/{}", id);
-        Consultant consultant = consultantService.getConsultant(id);
-        User user = userRepository.findById(consultant.getUserId()).orElse(null);
-        ConsultantProfileDto dto = ConsultantProfileMapper.toDto(consultant, user);
-        return ResponseEntity.ok(dto);
+        
+        try {
+            Consultant consultant = consultantService.getConsultant(id);
+            log.debug("Found consultant: {}", consultant);
+            
+            User user = userRepository.findById(consultant.getUserId()).orElse(null);
+            if (user == null) {
+                log.warn("User not found for consultant {}: {}", id, consultant.getUserId());
+            } else {
+                log.debug("Found user for consultant {}: {}", id, user.getEmail());
+            }
+            
+            ConsultantProfileDto dto = ConsultantProfileMapper.toDto(consultant, user);
+            
+            ConsultantResponse response = ConsultantResponse.builder()
+                    .id(consultant.getId())
+                    .userId(consultant.getUserId())
+                    .city(consultant.getCity())
+                    .experienceYears(consultant.getExperienceYears())
+                    .about(consultant.getAbout())
+                    .avatarUrl(consultant.getAvatarUrl())
+                    .profession(consultant.getProfession())
+                    .firstName(user != null ? user.getFirstName() : null)
+                    .lastName(user != null ? user.getLastName() : null)
+                    .build();
+            
+            log.debug("Returning consultant response: {}", response);
+            return response;
+        } catch (Exception e) {
+            log.error("Error getting consultant {}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Consultant> updateConsultant(@PathVariable UUID id, @RequestBody Consultant consultant, @RequestParam(required = false) List<UUID> specializationIds) {
-        log.info("PUT /consultant/{}", id);
-        if (specializationIds == null) {
-            specializationIds = List.of();
+    public ConsultantResponse updateConsultant(@PathVariable UUID id, @RequestBody ConsultantUpdateRequest request) {
+        log.info("PUT /consultant/{} - city: {}, profession: {}, experienceYears: {}", 
+                id, request.getCity(), request.getProfession(), request.getExperienceYears());
+        
+        try {
+            
+            Consultant consultant = new Consultant();
+            consultant.setCity(request.getCity());
+            consultant.setExperienceYears(request.getExperienceYears());
+            consultant.setAbout(request.getAbout());
+            consultant.setAvatarUrl(request.getAvatarUrl());
+            consultant.setProfession(request.getProfession());
+            
+            List<UUID> specializationIds = request.getSpecializationIds() != null ? request.getSpecializationIds() : List.of();
+            log.debug("Updating consultant {} with specializations: {}", id, specializationIds);
+            
+            Consultant updated = consultantService.updateConsultant(id, consultant, specializationIds);
+            log.info("Consultant updated successfully: {}", updated.getId());
+            
+            User user = userRepository.findById(updated.getUserId()).orElse(null);
+            if (user == null) {
+                log.warn("User not found for updated consultant {}: {}", id, updated.getUserId());
+            }
+            
+            ConsultantResponse response = ConsultantResponse.builder()
+                    .id(updated.getId())
+                    .userId(updated.getUserId())
+                    .city(updated.getCity())
+                    .experienceYears(updated.getExperienceYears())
+                    .about(updated.getAbout())
+                    .avatarUrl(updated.getAvatarUrl())
+                    .profession(updated.getProfession())
+                    .firstName(user != null ? user.getFirstName() : null)
+                    .lastName(user != null ? user.getLastName() : null)
+                    .build();
+            
+            log.debug("Returning updated consultant response: {}", response);
+            return response;
+        } catch (Exception e) {
+            log.error("Error updating consultant {}: {}", id, e.getMessage(), e);
+            throw e;
         }
-        return ResponseEntity.ok(consultantService.updateConsultant(id, consultant, specializationIds));
     }
 
     @PutMapping("/{id}/profile")
-    public ResponseEntity<Consultant> updateProfile(@PathVariable UUID id, @RequestBody Consultant consultant) {
+    public ConsultantResponse updateProfile(@PathVariable UUID id, @RequestBody ConsultantUpdateRequest request) {
         log.info("PUT /consultant/{}/profile", id);
         Consultant existing = consultantService.getConsultant(id);
-        existing.setCity(consultant.getCity());
-        existing.setExperienceYears(consultant.getExperienceYears());
-        existing.setAbout(consultant.getAbout());
-        if (consultant.getAvatarUrl() != null) {
-            existing.setAvatarUrl(consultant.getAvatarUrl());
+        
+        existing.setCity(request.getCity());
+        existing.setExperienceYears(request.getExperienceYears());
+        existing.setAbout(request.getAbout());
+        existing.setProfession(request.getProfession());
+        if (request.getAvatarUrl() != null) {
+            existing.setAvatarUrl(request.getAvatarUrl());
         }
-        return ResponseEntity.ok(consultantService.updateConsultant(id, existing, List.of()));
+        
+        // Сохраняем только основные данные профиля, не трогая специализации
+        existing = consultantRepository.save(existing);
+        
+        User user = userRepository.findById(existing.getUserId()).orElse(null);
+        
+        ConsultantResponse response = ConsultantResponse.builder()
+                .id(existing.getId())
+                .userId(existing.getUserId())
+                .city(existing.getCity())
+                .experienceYears(existing.getExperienceYears())
+                .about(existing.getAbout())
+                .avatarUrl(existing.getAvatarUrl())
+                .profession(existing.getProfession())
+                .firstName(user != null ? user.getFirstName() : null)
+                .lastName(user != null ? user.getLastName() : null)
+                .build();
+        
+        return response;
     }
 
     @GetMapping("/{id}/services")
-    public ResponseEntity<List<ConsultantServices>> getServices(@PathVariable UUID id) {
-        return ResponseEntity.ok(consultantService.getServices(id));
+    public List<ConsultantServiceResponse> getServices(@PathVariable UUID id) {
+        List<ConsultantServices> services = consultantService.getServices(id);
+        return services.stream()
+                .map(service -> ConsultantServiceResponse.builder()
+                        .id(service.getId())
+                        .name(service.getName())
+                        .description(service.getDescription())
+                        .price(service.getPrice())
+                        .consultantId(service.getConsultantId())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/{id}/services")
-    public ResponseEntity<ConsultantServices> addService(@PathVariable UUID id, @RequestBody ConsultantServices service) {
-        return ResponseEntity.ok(consultantService.addService(id, service));
+    public ConsultantServiceResponse addService(@PathVariable UUID id, @RequestBody ConsultantServiceRequest serviceRequest) {
+        
+        ConsultantServices service = new ConsultantServices();
+        service.setName(serviceRequest.getName());
+        service.setDescription(serviceRequest.getDescription());
+        service.setPrice(serviceRequest.getPrice());
+        service.setConsultantId(id);
+        
+        ConsultantServices savedService = consultantService.addService(id, service);
+        
+        return ConsultantServiceResponse.builder()
+                .id(savedService.getId())
+                .name(savedService.getName())
+                .description(savedService.getDescription())
+                .price(savedService.getPrice())
+                .consultantId(savedService.getConsultantId())
+                .build();
     }
 
     @GetMapping("/{id}/documents")
-    public ResponseEntity<List<ConsultantDocuments>> getDocuments(@PathVariable UUID id) {
-        return ResponseEntity.ok(consultantService.getDocuments(id));
+    public List<ConsultantDocumentResponse> getDocuments(@PathVariable UUID id) {
+        List<ConsultantDocuments> documents = consultantService.getDocuments(id);
+        return documents.stream()
+                .map(document -> ConsultantDocumentResponse.builder()
+                        .id(document.getId())
+                        .name(document.getName())
+                        .type(document.getType())
+                        .description(document.getDescription())
+                        .fileUrl(document.getFileUrl())
+                        .consultantId(document.getConsultantId())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @PostMapping(path = "/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ConsultantDocuments> addDocument(
+    public ConsultantDocumentResponse addDocument(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file,
             @RequestParam("name") String name,
             @RequestParam("type") String type,
             @RequestParam("description") String description) {
+        log.info("POST /consultant/{}/documents - name: {}, type: {}, filename: {}, size: {} bytes", 
+                id, name, type, file.getOriginalFilename(), file.getSize());
+        
         try {
-
             Path uploadPath = Paths.get(uploadDirDoc);
             if (!Files.exists(uploadPath)) {
+                log.debug("Creating document upload directory: {}", uploadPath);
                 Files.createDirectories(uploadPath);
             }
+            
             String originalFilename = file.getOriginalFilename();
             String fileExtension = originalFilename != null && originalFilename.contains(".") ?
                     originalFilename.substring(originalFilename.lastIndexOf(".") + 1) : "pdf";
             String fileName = id + "-" + System.currentTimeMillis() + "." + fileExtension;
             Path filePath = uploadPath.resolve(fileName);
+            
+            log.debug("Saving document: {} -> {}", originalFilename, filePath);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             String fileUrl = "/consultant/" + id + "/documents/" + fileName;
+            log.debug("Document URL: {}", fileUrl);
 
             ConsultantDocuments document = ConsultantDocuments.builder()
                     .consultantId(id)
@@ -137,38 +336,84 @@ public class ConsultantController {
                     .fileUrl(fileUrl)
                     .description(description)
                     .build();
+            
+            log.debug("Creating document record: {}", document);
             ConsultantDocuments saved = consultantService.addDocument(id, document);
-            return ResponseEntity.ok(saved);
+            log.info("Document added successfully for consultant {}: {}", id, saved.getId());
+            
+            ConsultantDocumentResponse response = ConsultantDocumentResponse.builder()
+                    .id(saved.getId())
+                    .name(saved.getName())
+                    .type(saved.getType())
+                    .description(saved.getDescription())
+                    .fileUrl(saved.getFileUrl())
+                    .consultantId(saved.getConsultantId())
+                    .build();
+            
+            log.debug("Returning document response: {}", response);
+            return response;
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error uploading document for consultant {}: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Error uploading document", e);
         }
     }
 
     @GetMapping("/{id}/reviews")
-    public ResponseEntity<List<ConsultantReviews>> getReviews(@PathVariable UUID id) {
-        return ResponseEntity.ok(consultantService.getReviews(id));
+    public List<ConsultantReviewResponse> getReviews(@PathVariable UUID id) {
+        List<ConsultantReviews> reviews = consultantService.getReviews(id);
+        return reviews.stream()
+                .map(review -> ConsultantReviewResponse.builder()
+                        .id(review.getId())
+                        .comment(review.getText())
+                        .rating(review.getRating())
+                        .consultantId(review.getConsultantId())
+                        .userId(review.getUserId())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/{id}/avatar")
-    public ResponseEntity<String> uploadProfileImage(
+    public FileUploadResponse uploadProfileImage(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {
+        log.info("POST /consultant/{}/avatar - filename: {}, size: {} bytes", 
+                id, file.getOriginalFilename(), file.getSize());
+        
         try {
             String fileName = saveImage(id, file);
+            log.debug("Image saved successfully: {}", fileName);
+            
             String avatarUrl = "/consultant/" + id + "/images/" + fileName;
             Consultant updated = consultantService.updateAvatar(id, avatarUrl);
+            log.info("Avatar updated for consultant {}: {}", id, avatarUrl);
+            
             Consultant checkConsultant = consultantService.getConsultant(id);
 
-            return ResponseEntity.ok("Изображение загружено успешно: " + fileName);
+            FileUploadResponse response = FileUploadResponse.builder()
+                    .fileName(fileName)
+                    .fileUrl(avatarUrl)
+                    .message("Изображение загружено успешно: " + fileName)
+                    .success(true)
+                    .build();
+            
+            log.debug("Returning upload response: {}", response);
+            return response;
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при загрузке изображения");
+            log.error("Error uploading avatar for consultant {}: {}", id, e.getMessage(), e);
+            return FileUploadResponse.builder()
+                    .message("Ошибка при загрузке изображения")
+                    .success(false)
+                    .build();
         }
     }
 
     private String saveImage(UUID id, MultipartFile file) throws IOException {
+        log.debug("Saving image for consultant {}: originalFilename={}, contentType={}", 
+                id, file.getOriginalFilename(), file.getContentType());
         
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
+            log.debug("Creating upload directory: {}", uploadPath);
             Files.createDirectories(uploadPath);
         }
         
@@ -176,12 +421,17 @@ public class ConsultantController {
         String fileExtension = originalFilename != null ?
                 originalFilename.substring(originalFilename.lastIndexOf(".") + 1) : "jpg";
         
+        log.debug("File extension: {}", fileExtension);
+        
         //String fileName = id + "-" + System.currentTimeMillis() + "." + fileExtension;
         String fileName = "avatar-" + id + "-" + fileExtension;
+        log.debug("Generated filename: {}", fileName);
 
         Path filePath = uploadPath.resolve(fileName);
+        log.debug("Full file path: {}", filePath);
         
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        log.debug("File saved successfully: {}", filePath);
 
         return fileName;
     }
@@ -238,50 +488,113 @@ public class ConsultantController {
     }
 
     @GetMapping("/{id}/specializations")
-    public ResponseEntity<List<ConsultantSpecialization>> getSpecializations(@PathVariable UUID id) {
+    public List<ConsultantSpecializationResponse> getSpecializations(@PathVariable UUID id) {
         List<ConsultantToSpecialization> links = consultantService.getConsultantToSpecializations(id);
         List<ConsultantSpecialization> specs = links.stream()
             .map(link -> consultantService.getSpecializationById(link.getSpecializationId()))
             .toList();
-        return ResponseEntity.ok(specs);
+        return specs.stream()
+                .map(spec -> ConsultantSpecializationResponse.builder()
+                        .id(spec.getId())
+                        .name(spec.getName())
+                        .description(spec.getName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/{id}/specializations")
-    public ResponseEntity<ConsultantSpecialization> addSpecialization(@PathVariable UUID id, @RequestBody SpecializationDto specializationDto) {
+    public ConsultantSpecializationResponse addSpecialization(@PathVariable UUID id, @RequestBody SpecializationDto specializationDto) {
         ConsultantSpecialization spec = consultantService.addSpecializationToConsultant(id, specializationDto.getName());
-        return ResponseEntity.ok(spec);
+        
+        return ConsultantSpecializationResponse.builder()
+                .id(spec.getId())
+                .name(spec.getName())
+                .description(spec.getName())
+                .build();
     }
 
     @GetMapping("/specializations")
-    public ResponseEntity<List<ConsultantSpecialization>> getAllSpecializations() {
-        return ResponseEntity.ok(consultantSpecializationRepository.findAll());
+    public List<ConsultantSpecializationResponse> getAllSpecializations() {
+        List<ConsultantSpecialization> specializations = consultantSpecializationRepository.findAll();
+        return specializations.stream()
+                .map(spec -> ConsultantSpecializationResponse.builder()
+                        .id(spec.getId())
+                        .name(spec.getName())
+                        .description(spec.getName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/specializations/search")
-    public ResponseEntity<List<ConsultantSpecialization>> searchSpecializations(@RequestParam("query") String query) {
-        return ResponseEntity.ok(consultantSpecializationRepository.findByNameContainingIgnoreCase(query));
+    public List<ConsultantSpecializationResponse> searchSpecializations(@RequestParam("query") String query) {
+        List<ConsultantSpecialization> specializations = consultantSpecializationRepository.findByNameContainingIgnoreCase(query);
+        return specializations.stream()
+                .map(spec -> ConsultantSpecializationResponse.builder()
+                        .id(spec.getId())
+                        .name(spec.getName())
+                        .description(spec.getName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/professions")
-    public ResponseEntity<List<String>> getAllProfessions() {
-        return ResponseEntity.ok(consultantService.findAllProfessions());
+    public List<String> getAllProfessions() {
+        return consultantService.findAllProfessions();
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ConsultantProfileDto>> searchConsultants(
+    public List<ConsultantResponse> searchConsultants(
             @RequestParam(required = false) String profession,
             @RequestParam(required = false) UUID specializationId,
             @RequestParam(required = false) Integer minPrice,
             @RequestParam(required = false) Integer maxPrice) {
-        return ResponseEntity.ok(consultantService.searchConsultants(profession, specializationId, minPrice, maxPrice));
+        log.info("GET /consultant/search - profession: {}, specializationId: {}, minPrice: {}, maxPrice: {}", 
+                profession, specializationId, minPrice, maxPrice);
+        
+        try {
+            List<ConsultantProfileDto> consultants = consultantService.searchConsultants(profession, specializationId, minPrice, maxPrice);
+            log.info("Found {} consultants matching search criteria", consultants.size());
+            
+            List<ConsultantResponse> response = consultants.stream()
+                    .map(dto -> ConsultantResponse.builder()
+                            .id(dto.getId())
+                            .userId(dto.getUserId())
+                            .city(dto.getCity())
+                            .experienceYears(dto.getExperienceYears())
+                            .about(dto.getAbout())
+                            .avatarUrl(dto.getAvatarUrl())
+                            .profession(dto.getProfession())
+                            .firstName(dto.getFirstName())
+                            .lastName(dto.getLastName())
+                            .minPrice(dto.getMinPrice())
+                            .build())
+                    .collect(Collectors.toList());
+            
+            log.debug("Returning {} consultant responses", response.size());
+            return response;
+        } catch (Exception e) {
+            log.error("Error searching consultants: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @GetMapping("/by-user/{userId}")
-    public ResponseEntity<ConsultantProfileDto> getConsultantByUserId(@PathVariable UUID userId) {
+    public ConsultantResponse getConsultantByUserId(@PathVariable UUID userId) {
         Consultant consultant = consultantRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         User user = userRepository.findById(consultant.getUserId()).orElse(null);
         ConsultantProfileDto dto = ConsultantProfileMapper.toDto(consultant, user);
-        return ResponseEntity.ok(dto);
+        
+        return ConsultantResponse.builder()
+                .id(consultant.getId())
+                .userId(consultant.getUserId())
+                .city(consultant.getCity())
+                .experienceYears(consultant.getExperienceYears())
+                .about(consultant.getAbout())
+                .avatarUrl(consultant.getAvatarUrl())
+                .profession(consultant.getProfession())
+                .firstName(user != null ? user.getFirstName() : null)
+                .lastName(user != null ? user.getLastName() : null)
+                .build();
     }
 } 

@@ -56,4 +56,21 @@ public interface UserService {
     void deleteUser(UUID id);
     void setUserBlocked(UUID id, boolean blocked);
     void changeUserRole(UUID id, String role);
+    
+    /**
+     * Запрос на сброс пароля
+     *
+     * @param email email пользователя
+     * @return true если email существует и письмо отправлено
+     */
+    boolean forgotPassword(String email);
+    
+    /**
+     * Сброс пароля по токену
+     *
+     * @param token токен для сброса пароля
+     * @param newPassword новый пароль
+     * @return true если пароль успешно изменен
+     */
+    boolean resetPassword(String token, String newPassword);
 }
