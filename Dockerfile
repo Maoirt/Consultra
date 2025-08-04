@@ -14,19 +14,23 @@ RUN apt-get update && \
 COPY auth-service/pom.xml ./auth-service/
 COPY notification-service/pom.xml ./notification-service/
 
-# Download Maven dependencies (this layer will be cached)
-RUN cd auth-service && mvn dependency:go-offline -DskipTests
-RUN cd notification-service && mvn dependency:go-offline -DskipTests
-
 # Copy source code
 COPY auth-service/ ./auth-service/
 COPY notification-service/ ./notification-service/
 
-# Build auth-service
-RUN cd auth-service && mvn clean package -DskipTests
+# Build auth-service with full clean and verbose output
+RUN cd auth-service && \
+    mvn clean && \
+    mvn dependency:resolve -X && \
+    mvn compile -X && \
+    mvn package -DskipTests -X
 
-# Build notification-service
-RUN cd notification-service && mvn clean package -DskipTests
+# Build notification-service with full clean and verbose output
+RUN cd notification-service && \
+    mvn clean && \
+    mvn dependency:resolve -X && \
+    mvn compile -X && \
+    mvn package -DskipTests -X
 
 # Create startup script to run Java services
 RUN echo '#!/bin/bash\n\

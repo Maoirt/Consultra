@@ -11,8 +11,12 @@ RUN apt-get update && apt-get install -y \
 # Copy the entire project
 COPY . .
 
-# Build auth-service only
-RUN cd auth-service && mvn clean package -DskipTests
+# Build auth-service only with full clean
+RUN cd auth-service && \
+    mvn clean && \
+    mvn dependency:resolve && \
+    mvn compile && \
+    mvn package -DskipTests
 
 # Create startup script to run auth-service only
 RUN echo '#!/bin/bash\n\
