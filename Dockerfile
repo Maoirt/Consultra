@@ -2,14 +2,12 @@ FROM openjdk:21-jdk-slim
 
 WORKDIR /app
 
-# Install Maven, Node.js, npm, nginx and other dependencies
-RUN apt-get update && apt-get install -y \
+# Install Maven and other dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     maven \
-    nodejs \
-    npm \
-    nginx \
     curl \
-    netcat \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy pom.xml files first for better caching
@@ -23,7 +21,6 @@ RUN cd notification-service && mvn dependency:go-offline -DskipTests
 # Copy source code
 COPY auth-service/ ./auth-service/
 COPY notification-service/ ./notification-service/
-COPY frontend/ ./frontend/
 
 # Build auth-service
 RUN cd auth-service && mvn clean package -DskipTests
@@ -31,20 +28,9 @@ RUN cd auth-service && mvn clean package -DskipTests
 # Build notification-service
 RUN cd notification-service && mvn clean package -DskipTests
 
-# Build frontend
-RUN cd frontend && npm install && npm run build
-
-# Copy nginx configuration for frontend
-RUN cp frontend/nginx.conf /etc/nginx/conf.d/default.conf
-
-# Create startup script to run all services
+# Create startup script to run Java services
 RUN echo '#!/bin/bash\n\
-echo "Starting all services..."\n\
-\n\
-# Start nginx for frontend\n\
-echo "Starting nginx for frontend..."\n\
-nginx &\n\
-NGINX_PID=$!\n\
+echo "Starting Java services..."\n\
 \n\
 # Start auth-service in background\n\
 echo "Starting auth-service..."\n\
@@ -56,19 +42,19 @@ echo "Starting notification-service..."\n\
 java -jar notification-service/target/notification-service-0.0.1-SNAPSHOT.jar &\n\
 NOTIFICATION_PID=$!\n\
 \n\
-echo "All services started. PIDs: Auth=$AUTH_PID, Notification=$NOTIFICATION_PID, Nginx=$NGINX_PID"\n\
+echo "All services started. PIDs: Auth=$AUTH_PID, Notification=$NOTIFICATION_PID"\n\
 \n\
 # Wait for all processes\n\
-wait $AUTH_PID $NOTIFICATION_PID $NGINX_PID' > /app/start.sh
+wait $AUTH_PID $NOTIFICATION_PID' > /app/start.sh
 
 RUN chmod +x /app/start.sh
 
-# Expose ports for all services
-EXPOSE 8080 8081 80
+# Expose ports for Java services
+EXPOSE 8080 8081
 
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV PORT=8080
 
-# Start all services
+# Start Java services
 CMD ["/app/start.sh"] 

@@ -38,7 +38,7 @@ NOTIFICATION_EMAIL_SUBJECT = "Email Verification"
 NOTIFICATION_EMAIL_MESSAGE = "Click the link to verify your email"
 NOTIFICATION_PORT = "8081"
 
-# Frontend Variables
-FRONTEND_REACT_APP_API_URL = "http://localhost:8080"
-FRONTEND_REACT_APP_WS_URL = "ws://localhost:8080"
-FRONTEND_PORT = "80" 
+# Frontend Variables (commented out for now)
+# FRONTEND_REACT_APP_API_URL = "http://localhost:8080"
+# FRONTEND_REACT_APP_WS_URL = "ws://localhost:8080"
+# FRONTEND_PORT = "80" 
