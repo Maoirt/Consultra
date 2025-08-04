@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import './Login.css';
 import { Link } from 'react-router-dom';
+import { request } from '../../helpers/axios_helper';
 
 export default class ForgotPasswordForm extends React.Component {
   constructor(props) {
@@ -25,29 +26,22 @@ export default class ForgotPasswordForm extends React.Component {
     e.preventDefault();
     this.setState({ isLoading: true, message: "" });
     
-            fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/forgot-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: this.state.email })
-    })
-    .then(response => response.json())
-    .then(data => {
-      this.setState({ 
-        message: data.message, 
-        success: data.success, 
-        isLoading: false 
+    request('POST', '/forgot-password', { email: this.state.email })
+      .then(response => {
+        this.setState({ 
+          message: response.data.message, 
+          success: response.data.success, 
+          isLoading: false 
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        this.setState({ 
+          message: 'Ошибка при отправке запроса на сброс пароля', 
+          success: false, 
+          isLoading: false 
+        });
       });
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      this.setState({ 
-        message: 'Ошибка при отправке запроса на сброс пароля', 
-        success: false, 
-        isLoading: false 
-      });
-    });
   };
 
   render() {

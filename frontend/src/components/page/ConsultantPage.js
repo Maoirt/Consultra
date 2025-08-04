@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { request } from '../../helpers/axios_helper';
+import { request, uploadFile } from '../../helpers/axios_helper';
 import './ConsultantPage.css';
 import AddConsultationModal from '../Modal/AddConsultationModal'
 import AddDocumentModal from '../Modal/AddDocumentModal'
@@ -67,7 +67,7 @@ export default function ConsultantPage({ consultantId }) {
 
   useEffect(() => {
     if (consultant) {
-              const avatarUrl = consultant.avatarUrl ? `${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png';
+              const avatarUrl = consultant.avatarUrl ? `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png';
     }
   }, [consultant, consultantId]);
 
@@ -152,19 +152,9 @@ export default function ConsultantPage({ consultantId }) {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
+      const response = await uploadFile(`/consultant/${consultantId}/avatar`, formData);
 
-
-              const response = await fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/consultant/${consultantId}/avatar`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
-      });
-
-      const responseText = await response.text();
-
-      if (response.ok) {
+      if (response.status === 200) {
         const consultantResponse = await request('GET', `/consultant/${consultantId}`);
         setConsultant(consultantResponse.data);
         setSelectedFile(null);
@@ -229,7 +219,7 @@ export default function ConsultantPage({ consultantId }) {
         <div className="avatar-section">
           <img 
             className="avatar" 
-                            src={previewUrl || (consultant.avatarUrl ? `${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png')} 
+                            src={previewUrl || (consultant.avatarUrl ? `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png')}
             alt="avatar" 
             onLoad={() => {}}
             onError={(e) => {

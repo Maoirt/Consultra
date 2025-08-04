@@ -13,10 +13,15 @@ export const setAuthHeader = (token) => {
         localStorage.removeItem('auth_token');
     }
 };
-// Get API URL from environment variable or use default
-const API_URL = process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080';
+
+const API_URL = process.env.REACT_APP_API_URL || 'https://auth-latest-mean.onrender.com';
+const WS_URL = process.env.REACT_APP_WS_URL || 'https://auth-latest-mean.onrender.com';
+
 axios.defaults.baseURL = API_URL;
 
+export const getWebSocketUrl = () => {
+    return WS_URL.replace('http', 'ws');
+};
 
 export const request = (method, url, data) => {
 
@@ -37,4 +42,18 @@ export const request = (method, url, data) => {
         url: url,
         headers: headers,
         data: sendData});
+};
+
+export const uploadFile = (url, formData) => {
+    let headers = {};
+    if (getAuthToken() !== null && getAuthToken() !== "null") {
+        headers = {'Authorization': `Bearer ${getAuthToken()}`};
+    }
+
+    return axios({
+        method: 'POST',
+        url: url,
+        headers: headers,
+        data: formData
+    });
 };

@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import './Login.css';
 import { Link } from 'react-router-dom';
+import { request } from '../../helpers/axios_helper';
 
 export default class RegistrationForm extends React.Component {
   constructor(props) {
@@ -41,23 +42,16 @@ export default class RegistrationForm extends React.Component {
     const email = event.target.value;
     this.setState({ email });
     if (email && email.includes('@gmail.com')) {
-              fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/send-verification-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert('Код подтверждения отправлен на вашу почту');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Ошибка при отправке кода подтверждения');
-      });
+      request('POST', '/send-verification-code', { email })
+        .then(response => {
+          if (response.data.success) {
+            alert('Код подтверждения отправлен на вашу почту');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Ошибка при отправке кода подтверждения');
+        });
     }
   };
 
@@ -66,30 +60,23 @@ export default class RegistrationForm extends React.Component {
     this.setState({ verificationCode });
     
     if (verificationCode.length === 6) {
-              fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/verify-code`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: this.state.email,
-          code: verificationCode
+      request('POST', '/verify-code', {
+        email: this.state.email,
+        code: verificationCode
+      })
+        .then(response => {
+          if (response.data.verified) {
+            this.setState({ isEmailVerified: true });
+            alert('Email успешно подтвержден');
+          } else {
+            this.setState({ isEmailVerified: false });
+            alert('Неверный код подтверждения');
+          }
         })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.verified) {
-          this.setState({ isEmailVerified: true });
-          alert('Email успешно подтвержден');
-        } else {
+        .catch(error => {
+          console.error('Error:', error);
           this.setState({ isEmailVerified: false });
-          alert('Неверный код подтверждения');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        this.setState({ isEmailVerified: false });
-      });
+        });
     }
   };
 
