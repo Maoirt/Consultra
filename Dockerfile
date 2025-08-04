@@ -15,4 +15,4 @@ RUN chmod +x debug-env.sh
 EXPOSE 8080 8081 3000 5432
 
 # Start the application with debug
-CMD ["sh", "-c", "./debug-env.sh && docker-compose up -d"] 
+CMD ["sh", "-c", "./debug-env.sh && docker-compose -f docker-compose.yml up -d"] 

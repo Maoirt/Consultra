@@ -18,7 +18,7 @@ spring:
       level:
         liquibase: DEBUG
   profiles:
-    active: ${AUTH_SPRING_PROFILES_ACTIVE:dev}
+    active: ${AUTH_SPRING_PROFILES_ACTIVE:prod}
 
 notification:
   service:
@@ -26,9 +26,9 @@ notification:
 
 app:
   cors:
-    allowed-origins: ${AUTH_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://frontend:80}
+    allowed-origins: ${AUTH_CORS_ALLOWED_ORIGINS:http://frontend:80,http://localhost:3000}
   frontend:
-    url: ${FRONTEND_URL:http://localhost:3000}
+    url: ${FRONTEND_URL:http://frontend:80}
   upload:
     base-path: ${UPLOAD_BASE_PATH:./uploads}
     avatar:

@@ -12,6 +12,12 @@ echo "AUTH_PORT: $AUTH_PORT"
 echo "PORT: $PORT"
 echo "================================"
 
+echo "=== Directory Debug ==="
+echo "Current directory: $(pwd)"
+echo "Directory contents:"
+ls -la
+echo "================================"
+
 # Test database connection
 echo "Testing database connection..."
 nc -zv db 5432 || echo "Database connection failed"
