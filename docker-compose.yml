@@ -3,48 +3,55 @@ services:
   auth-service:
     build: ./auth-service
     ports:
-      - "8081:8080"
+      - "${PORT:-8080}:8080"
     depends_on:
       db:
         condition: service_healthy
       notification-service:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/consultra
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=maoirt
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - SPRING_DATASOURCE_URL=${DATABASE_URL:-jdbc:postgresql://db:5432/consultra}
+      - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:-postgres}
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD:-maoirt}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - NOTIFICATION_SERVICE_URL=http://notification-service:8081
+      - NOTIFICATION_SERVICE_URL=${NOTIFICATION_SERVICE_URL:-http://notification-service:8081}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend:80}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-secret-value}
     networks:
       - app-network
   notification-service:
     build: ./notification-service
     ports:
-      - "8083:8081"
+      - "${NOTIFICATION_PORT:-8081}:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EMAIL_USERNAME=maoirtx77@gmail.com
-      - EMAIL_PASSWORD=kzyu lpcs ywqt khzk
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - EMAIL_USERNAME=${EMAIL_USERNAME:-maoirtx77@gmail.com}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-kzyu lpcs ywqt khzk}
+      - EMAIL_HOST=${EMAIL_HOST:-smtp.gmail.com}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
     networks:
       - app-network
   frontend:
     build: ./frontend
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
       - auth-service
+    environment:
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8080}
+      - REACT_APP_WS_URL=${REACT_APP_WS_URL:-ws://localhost:8080}
     networks:
       - app-network
   db:
     image: postgres:13
     restart: always
     environment:
-      - POSTGRES_DB=consultra
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=maoirt
+      - POSTGRES_DB=${POSTGRES_DB:-consultra}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-maoirt}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

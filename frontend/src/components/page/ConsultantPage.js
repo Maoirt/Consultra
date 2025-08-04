@@ -67,7 +67,7 @@ export default function ConsultantPage({ consultantId }) {
 
   useEffect(() => {
     if (consultant) {
-              const avatarUrl = consultant.avatarUrl ? `http://localhost:8080${consultant.avatarUrl}` : '/default-avatar.png';
+              const avatarUrl = consultant.avatarUrl ? `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png';
     }
   }, [consultant, consultantId]);
 
@@ -154,7 +154,7 @@ export default function ConsultantPage({ consultantId }) {
 
 
 
-              const response = await fetch(`http://localhost:8080/consultant/${consultantId}/avatar`, {
+              const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/consultant/${consultantId}/avatar`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -229,7 +229,7 @@ export default function ConsultantPage({ consultantId }) {
         <div className="avatar-section">
           <img 
             className="avatar" 
-                            src={previewUrl || (consultant.avatarUrl ? `http://localhost:8080${consultant.avatarUrl}` : '/default-avatar.png')} 
+                            src={previewUrl || (consultant.avatarUrl ? `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png')} 
             alt="avatar" 
             onLoad={() => {}}
             onError={(e) => {
@@ -411,7 +411,7 @@ export default function ConsultantPage({ consultantId }) {
                 return (
                   <li key={d.id}>
                     <a
-                                              href={`http://localhost:8080${d.fileUrl}`}
+                                              href={`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${d.fileUrl}`}
                       download={fileName}
                     >
                       {d.name || fileName}

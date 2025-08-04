@@ -32,7 +32,6 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping("/profile")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     public UserProfileResponse getUserProfile(Authentication authentication) {
         String currentEmail;
         if (authentication.getPrincipal() instanceof UserDto) {
@@ -64,7 +63,6 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3000", "http://frontend:80"})
     public UserProfileResponse updateProfile(@RequestBody UserProfileRequest userRequest, Authentication authentication) {
         log.info("PUT /api/users/profile - email: {}", authentication.getName());
         log.debug("Update data: {}", userRequest);
@@ -106,7 +104,6 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     public UserProfileResponse getUserById(@PathVariable UUID userId) {
         log.info("GET /api/users/{}", userId);
         

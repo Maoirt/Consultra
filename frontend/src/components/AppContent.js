@@ -132,7 +132,7 @@ export default class AppContent extends React.Component {
      onGoogleLogin = async () => {
         try {
 
-            const response = await fetch("http://localhost:8080/oauth2/login/success", {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/oauth2/login/success`, {
                 method: "GET",
                 credentials: "include"
             });

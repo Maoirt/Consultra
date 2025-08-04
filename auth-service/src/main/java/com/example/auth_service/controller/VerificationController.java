@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
 @Tag(name = "VerificationController", description = "Контроллер для верификации пользователей")
 public class VerificationController {
 
@@ -31,7 +30,6 @@ public class VerificationController {
     @Value("${notification.service.url:http://localhost:8081}")
     private String notificationServiceUrl;
 
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @PostMapping("/send-verification-code")
     public VerificationCodeResponse sendVerificationCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");
@@ -85,7 +83,6 @@ public class VerificationController {
         }
     }
 
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @PostMapping("/verify-code")
     public CodeVerificationResponse verifyCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");

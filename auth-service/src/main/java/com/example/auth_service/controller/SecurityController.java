@@ -25,7 +25,6 @@ public class SecurityController {
 
 
     @GetMapping("/send-reset-link")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     public void sendResetLink(@RequestParam("email") String email) {
         try {
 
@@ -40,7 +39,6 @@ public class SecurityController {
     }
 
     @PostMapping("/security-reset-password")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     public SecurityActionResponse resetPassword(@RequestParam("token") String token, @RequestParam("newPassword") String newPassword) {
         try {
             log.info("POST /security-reset-password - token: {}", token);

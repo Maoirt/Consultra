@@ -30,7 +30,7 @@ public class SecurityServiceImpl {
     @Autowired
     private RestTemplate restTemplate;
     
-    @Value("${notification.service.url:http://localhost:8083}")
+    @Value("${notification.service.url:http://localhost:8081}")
     private String notificationServiceUrl;
 
     public void sendResetLink(String email){
@@ -43,7 +43,8 @@ public class SecurityServiceImpl {
             user.setResetTokenExpiration(LocalDateTime.now().plusHours(1));
             userRepository.save(user);
 
-            String resetLink = "http://localhost:8081/reset-password?token=" + token;
+            String resetLink = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:3000";
+            resetLink += "/reset-password?token=" + token;
 
             EmailRequest emailRequest = new EmailRequest(user.getEmail(), "Email Verification", "Click the link to reset your password: " + resetLink);
             restTemplate.postForObject(notificationServiceUrl + "/api/reset-password", emailRequest, Void.class);

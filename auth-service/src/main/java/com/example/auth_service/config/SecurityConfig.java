@@ -6,6 +6,7 @@ import com.example.auth_service.security.UserAuthProvider;
 import com.example.auth_service.security.UserAuthenticationEntryPoint;
 //import com.example.auth_service.service.impl.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,6 +20,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -27,6 +31,9 @@ public class SecurityConfig {
     private final UserAuthenticationEntryPoint userAuthenticationEntryPoint;
     private final UserAuthProvider userAuthProvider;
     //private final CustomOAuth2UserService customOAuth2UserService;
+
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://frontend:80}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -66,7 +73,7 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("http://localhost:3000")
+                        .logoutSuccessUrl(System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:3000")
                         .permitAll()
                 );
 
@@ -77,7 +84,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOrigin("http://localhost:3000");
+        
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        origins.forEach(configuration::addAllowedOrigin);
+        
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
 

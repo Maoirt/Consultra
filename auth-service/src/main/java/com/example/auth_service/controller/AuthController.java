@@ -52,7 +52,6 @@ public class AuthController {
     //private final CustomOAuth2UserService customOAuth2UserService;
 
     @PostMapping("/login")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @Operation(summary = "Вход", description = "Позволяет войти в приложение")
     public LoginResponse login(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -87,7 +86,6 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @Operation(summary = "Регистрация", description = "Позволяет зарегистрироваться в приложении")
     public RegisterResponse register(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -131,7 +129,6 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     public VerifyEmailResponse verifyEmail(@RequestParam("token") String token) {
         log.info("POST /verify-email - token: {}", token);
         String result = verificationService.validateVerificationToken(token);
@@ -153,7 +150,6 @@ public class AuthController {
     }
     
     @PostMapping("/forgot-password")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @Operation(summary = "Забыл пароль", description = "Отправляет письмо для сброса пароля")
     public ForgotPasswordResponse forgotPassword(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -182,7 +178,6 @@ public class AuthController {
     }
     
     @PostMapping("/reset-password")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://frontend:80"})
     @Operation(summary = "Сброс пароля", description = "Устанавливает новый пароль по токену")
     public ResetPasswordResponse resetPassword(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(

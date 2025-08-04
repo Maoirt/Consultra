@@ -8,9 +8,9 @@ spring:
     hibernate:
       ddl-auto: update
   datasource:
-    url: jdbc:postgresql://localhost:5432/consultra
-    username: postgres
-    password: maoirt
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/consultra}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:maoirt}
     schema: public
     liquibase:
       default-schema: public
@@ -18,21 +18,25 @@ spring:
       level:
         liquibase: DEBUG
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 notification:
   service:
-    url: http://localhost:8081
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8081}
 
 app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://frontend:80}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
   upload:
-    base-path: ./uploads
+    base-path: ${UPLOAD_BASE_PATH:./uploads}
     avatar:
-      path: ./uploads/avatars
+      path: ${UPLOAD_AVATAR_PATH:./uploads/avatars}
       max-size: 2097152
       allowed-types: [ jpg, jpeg, png, gif ]
     document:
-      path: ./uploads/documents
+      path: ${UPLOAD_DOCUMENT_PATH:./uploads/documents}
       max-size: 10485760
       allowed-types: [ pdf, doc, docx, jpg, png ]
 
@@ -42,9 +46,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:postgresql://db:5432/consultra
-    username: postgres
-    password: maoirt
+    url: ${DATABASE_URL:jdbc:postgresql://db:5432/consultra}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:maoirt}
     schema: public
     liquibase:
       default-schema: public
@@ -54,24 +58,22 @@ spring:
 
 notification:
   service:
-    url: http://notification-service:8081
-
-
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8081}
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 security:
   jwt:
     token:
-      secret-key: secret-value
+      secret-key: ${JWT_SECRET_KEY:secret-value}
 
 openapi:
-  dev-url: "http://localhost:8081"
-  prod-url: "https://authservice.ru"
-  email: "example@gmail.com"
-  name: "Author"
-  url: "https://authservice.ru"
+  dev-url: ${OPENAPI_DEV_URL:http://localhost:8081}
+  prod-url: ${OPENAPI_PROD_URL:https://authservice.ru}
+  email: ${OPENAPI_EMAIL:example@gmail.com}
+  name: ${OPENAPI_NAME:Author}
+  url: ${OPENAPI_URL:https://authservice.ru}
 
 logging:
   level:

@@ -13,7 +13,9 @@ export const setAuthHeader = (token) => {
         localStorage.removeItem('auth_token');
     }
 };
-axios.defaults.baseURL = 'http://localhost:8080';
+// Get API URL from environment variable or use default
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+axios.defaults.baseURL = API_URL;
 
 
 export const request = (method, url, data) => {

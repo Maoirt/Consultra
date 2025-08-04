@@ -3,8 +3,8 @@ spring:
     name: notification-service
 
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
     username: ${EMAIL_USERNAME:maoirtx77@gmail.com}
     password: ${EMAIL_PASSWORD:kzyu lpcs ywqt khzk}
     properties:
@@ -13,9 +13,8 @@ spring:
       mail.smtp.starttls.required: true
 
 email:
-  subject: Email Verification
-  message: Click the link to verify your email
-
+  subject: ${EMAIL_SUBJECT:Email Verification}
+  message: ${EMAIL_MESSAGE:Click the link to verify your email}
 
 server:
-  port: 8081
+  port: ${PORT:8081}

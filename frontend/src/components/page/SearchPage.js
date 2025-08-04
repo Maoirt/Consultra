@@ -141,7 +141,7 @@ function SearchPage() {
             <div key={consultant.id} className="consultant-card">
               <div className="card-main-content">
                 <div className="card-left">
-                  <img src={consultant.avatarUrl ? `http://localhost:8080${consultant.avatarUrl}` : '/default-avatar.png'} alt={consultant.name} className="consultant-avatar" />
+                  <img src={consultant.avatarUrl ? `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${consultant.avatarUrl}` : '/default-avatar.png'} alt={consultant.name} className="consultant-avatar" />
                 </div>
                 <div className="card-center">
                   <div className="name-wrapper">

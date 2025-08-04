@@ -170,7 +170,8 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         
 
-        String resetUrl = "http://localhost:3000/reset-password?token=" + resetToken;
+        String resetUrl = System.getenv("FRONTEND_URL") != null ? System.getenv("FRONTEND_URL") : "http://localhost:3000";
+        resetUrl += "/reset-password?token=" + resetToken;
         String subject = "Сброс пароля";
         String body = String.format(
             "Здравствуйте, %s!\n\n" +
@@ -185,7 +186,8 @@ public class UserServiceImpl implements UserService {
         
                     try {
                 EmailRequest emailRequest = new EmailRequest(email, subject, body);
-                restTemplate.postForObject("http://localhost:8081/api/email/send-email", emailRequest, Void.class);
+                String notificationUrl = System.getenv("NOTIFICATION_SERVICE_URL") != null ? System.getenv("NOTIFICATION_SERVICE_URL") : "http://localhost:8081";
+                restTemplate.postForObject(notificationUrl + "/api/email/send-email", emailRequest, Void.class);
                 return true;
             } catch (Exception e) {
                 log.error("Error sending reset password email to {}", email, e);
