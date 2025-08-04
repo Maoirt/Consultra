@@ -8,7 +8,7 @@ spring:
     hibernate:
       ddl-auto: update
   datasource:
-    url: ${AUTH_DATABASE_URL:jdbc:postgresql://localhost:5432/consultra}
+    url: ${AUTH_DATABASE_URL:jdbc:postgresql://db:5432/consultra}
     username: ${AUTH_DATABASE_USERNAME:postgres}
     password: ${AUTH_DATABASE_PASSWORD:maoirt}
     schema: public
@@ -22,7 +22,7 @@ spring:
 
 notification:
   service:
-    url: ${AUTH_NOTIFICATION_SERVICE_URL:http://localhost:8081}
+    url: ${AUTH_NOTIFICATION_SERVICE_URL:http://notification-service:8081}
 
 app:
   cors:
