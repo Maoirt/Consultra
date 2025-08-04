@@ -1,6 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+buildTimeout = 1800
 
 [deploy]
 startCommand = "/app/start.sh"

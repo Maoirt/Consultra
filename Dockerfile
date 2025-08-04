@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
 
 WORKDIR /app
 
@@ -12,14 +12,24 @@ RUN apt-get update && apt-get install -y \
     netcat \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the entire project
-COPY . .
+# Copy pom.xml files first for better caching
+COPY auth-service/pom.xml ./auth-service/
+COPY notification-service/pom.xml ./notification-service/
+
+# Download Maven dependencies (this layer will be cached)
+RUN cd auth-service && mvn dependency:go-offline -DskipTests
+RUN cd notification-service && mvn dependency:go-offline -DskipTests
+
+# Copy source code
+COPY auth-service/ ./auth-service/
+COPY notification-service/ ./notification-service/
+COPY frontend/ ./frontend/
 
 # Build auth-service
-RUN cd auth-service && mvn clean package -DskipTests -q
+RUN cd auth-service && mvn clean package -DskipTests
 
 # Build notification-service
-RUN cd notification-service && mvn clean package -DskipTests -q
+RUN cd notification-service && mvn clean package -DskipTests
 
 # Build frontend
 RUN cd frontend && npm install && npm run build

@@ -22,7 +22,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build outputs (keep target for Maven builds)
-# target/
+target/
 build/
 dist/
 
