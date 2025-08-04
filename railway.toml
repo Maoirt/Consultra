@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "docker-compose up -d"
+startCommand = "/app/start.sh"
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
@@ -13,18 +13,18 @@ healthcheckPort = 8080
 [env]
 # Auth Service Variables
 AUTH_SPRING_PROFILES_ACTIVE = "prod"
-AUTH_DATABASE_URL = "jdbc:postgresql://db:5432/consultra"
-AUTH_DATABASE_USERNAME = "postgres"
-AUTH_DATABASE_PASSWORD = "maoirt"
-AUTH_NOTIFICATION_SERVICE_URL = "http://notification-service:8081"
-AUTH_CORS_ALLOWED_ORIGINS = "https://your-frontend-domain.railway.app,http://frontend:80"
+AUTH_DATABASE_URL = "jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}"
+AUTH_DATABASE_USERNAME = "${PGUSER}"
+AUTH_DATABASE_PASSWORD = "${PGPASSWORD}"
+AUTH_NOTIFICATION_SERVICE_URL = "http://localhost:8081"
+AUTH_CORS_ALLOWED_ORIGINS = "http://localhost:80,http://frontend:80"
 AUTH_JWT_SECRET_KEY = "your-secret-key-here"
 AUTH_PORT = "8080"
 
 # Notification Service Variables
 NOTIFICATION_SPRING_PROFILES_ACTIVE = "prod"
-NOTIFICATION_EMAIL_USERNAME = "your-email@gmail.com"
-NOTIFICATION_EMAIL_PASSWORD = "your-app-password"
+NOTIFICATION_EMAIL_USERNAME = "maoirtx77@gmail.com"
+NOTIFICATION_EMAIL_PASSWORD = "kzyu lpcs ywqt khzk"
 NOTIFICATION_EMAIL_HOST = "smtp.gmail.com"
 NOTIFICATION_EMAIL_PORT = "587"
 NOTIFICATION_EMAIL_SUBJECT = "Email Verification"
@@ -32,11 +32,11 @@ NOTIFICATION_EMAIL_MESSAGE = "Click the link to verify your email"
 NOTIFICATION_PORT = "8081"
 
 # Frontend Variables
-FRONTEND_REACT_APP_API_URL = "https://your-backend-domain.railway.app"
-FRONTEND_REACT_APP_WS_URL = "wss://your-backend-domain.railway.app"
-FRONTEND_PORT = "3000"
+REACT_APP_API_URL = "http://localhost:8080"
+REACT_APP_WS_URL = "ws://localhost:8080"
+FRONTEND_PORT = "80"
 
-# Database Variables
+# Database Variables (will be overridden by Railway App variables)
 DB_POSTGRES_DB = "consultra"
 DB_POSTGRES_USER = "postgres"
 DB_POSTGRES_PASSWORD = "maoirt"
