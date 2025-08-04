@@ -186,11 +186,15 @@ public class UserServiceImpl implements UserService {
         
                     try {
                 EmailRequest emailRequest = new EmailRequest(email, subject, body);
-                String notificationUrl = System.getenv("AUTH_NOTIFICATION_SERVICE_URL") != null ? System.getenv("AUTH_NOTIFICATION_SERVICE_URL") : "http://localhost:8081";
+                String notificationUrl = System.getenv("AUTH_NOTIFICATION_SERVICE_URL") != null ? System.getenv("AUTH_NOTIFICATION_SERVICE_URL") : "http://notification-service:8081";
+                
+                // пробуем отправить email через notification service
                 restTemplate.postForObject(notificationUrl + "/api/email/send-email", emailRequest, Void.class);
+                log.info("Reset password email sent successfully to {}", email);
                 return true;
             } catch (Exception e) {
-                log.error("Error sending reset password email to {}", email, e);
+                log.error("Error sending reset password email to {}: {}", email, e.getMessage());
+                // можно добавить fallback - например, логирование для ручной отправки
                 return false;
             }
     }

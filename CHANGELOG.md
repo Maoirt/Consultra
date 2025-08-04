@@ -1,4 +1,4 @@
-# Изменения для деплоя на Railway.app
+# Изменения для локального запуска
 
 ## Основные изменения
 
@@ -35,29 +35,26 @@
 - `REACT_APP_API_URL` - URL API
 - `REACT_APP_WS_URL` - URL WebSocket
 
-### 3. Файлы для Railway.app
+### 3. Файлы для локального запуска
 
 #### Созданные файлы:
-- `railway.json` - конфигурация Railway.app
-- `railway.toml` - альтернативная конфигурация
 - `Dockerfile` - основной Dockerfile
 - `.dockerignore` - исключения для Docker
-- `README_RAILWAY.md` - инструкции по деплою
-- `railway-setup.md` - настройка Railway.app
+- `docker-compose.yml` - конфигурация для локального запуска
 
 ### 4. Health Check endpoints
 
 #### Добавлены:
-- `/actuator/health` - для Railway.app health check
+- `/actuator/health` - для health check
 - `/health` - простой health check
 
 ### 5. Обновленный docker-compose.yml
 
 #### Изменения:
-- Добавлена поддержка переменных окружения
-- Настроены порты через переменные
-- Добавлены health checks
-- Оптимизирована конфигурация для production
+- Упрощена конфигурация для локального запуска
+- Убраны Railway-специфичные переменные
+- Настроены фиксированные порты
+- Оптимизирована конфигурация для разработки
 
 ## Структура проекта после изменений
 
@@ -66,38 +63,41 @@ Auth/Consultra/
 ├── auth-service/          # Основной сервис
 ├── notification-service/  # Сервис уведомлений
 ├── frontend/             # React приложение
-├── docker-compose.yml    # Обновленный для Railway
+├── docker-compose.yml    # Конфигурация для локального запуска
 ├── Dockerfile           # Основной Dockerfile
-├── railway.json         # Конфигурация Railway
-├── railway.toml         # Альтернативная конфигурация
 ├── .dockerignore        # Исключения для Docker
-├── README_RAILWAY.md    # Инструкции по деплою
-├── railway-setup.md     # Настройка Railway
 └── CHANGELOG.md         # Этот файл
 ```
 
-## Команды для деплоя
+## Команды для локального запуска
 
 ### Локальная разработка:
 ```bash
 docker-compose up -d
 ```
 
-### Деплой на Railway.app:
-1. Подключите репозиторий к Railway.app
-2. Настройте переменные окружения
-3. Запустите деплой
+### Остановка:
+```bash
+docker-compose down
+```
 
-## Проверка после деплоя
+### Пересборка:
+```bash
+docker-compose up -d --build
+```
 
-1. **Health Check**: `https://your-domain.railway.app/actuator/health`
-2. **Frontend**: `https://your-frontend-domain.railway.app`
-3. **WebSocket**: Проверьте подключение к чату
-4. **Email**: Проверьте отправку уведомлений
+## Проверка после запуска
+
+1. **Auth Service**: `http://localhost:8080/actuator/health`
+2. **Notification Service**: `http://localhost:8081/actuator/health`
+3. **Frontend**: `http://localhost:3000`
+4. **Database**: `localhost:5432`
+5. **WebSocket**: Проверьте подключение к чату
+6. **Email**: Проверьте отправку уведомлений
 
 ## Безопасность
 
 - Все секретные данные вынесены в переменные окружения
 - Удалены хардкод ссылки
-- Добавлена поддержка HTTPS/WSS для production
-- Настроены CORS для безопасности 
+- Настроены CORS для безопасности
+- Используется профиль `dev` для разработки 

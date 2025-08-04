@@ -5,16 +5,19 @@ import { Client } from '@stomp/stompjs';
 import { useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
-const WS_URL = `${process.env.FRONTEND_REACT_APP_WS_URL || 'ws://localhost:8080'}/ws-chat`;
+const WS_URL = `${process.env.REACT_APP_WS_URL || 'http://localhost:8080'}/ws-chat`;
 
 function getChatId(userId, consultantId) {
   return [userId, consultantId].sort().join('-');
 }
 
 function parseChatId(chatId, userId) {
-  const parts = chatId.split('-');
-  const id1 = parts[0];
-  const id2 = parts[1];
+  if (!chatId || chatId.length < 73) return null;
+  const id1 = chatId.slice(0, 36);
+  const id2 = chatId.slice(37, 73);
+  if (userId === id1) return id2;
+  if (userId === id2) return id1;
+
   
   // определяем, какой ID принадлежит пользователю
   return id2;

@@ -18,11 +18,11 @@ COPY notification-service/pom.xml ./notification-service/
 COPY auth-service/ ./auth-service/
 COPY notification-service/ ./notification-service/
 
-# Build auth-service with simplified process
+# Build auth-service
 RUN cd auth-service && \
     mvn clean package -DskipTests -q
 
-# Build notification-service with simplified process
+# Build notification-service
 RUN cd notification-service && \
     mvn clean package -DskipTests -q
 
@@ -50,8 +50,8 @@ RUN chmod +x /app/start.sh
 # Expose ports for Java services
 EXPOSE 8080 8081
 
-# Set environment variables
-ENV SPRING_PROFILES_ACTIVE=prod
+# Set environment variables for local development
+ENV SPRING_PROFILES_ACTIVE=dev
 ENV PORT=8080
 
 # Start Java services
