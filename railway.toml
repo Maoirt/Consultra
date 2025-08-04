@@ -10,7 +10,6 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 healthcheckPort = 8080
 
-[env]
 # Auth Service Variables
 AUTH_SPRING_PROFILES_ACTIVE = "prod"
 AUTH_NOTIFICATION_SERVICE_URL = "http://localhost:8081"
@@ -29,6 +28,6 @@ NOTIFICATION_EMAIL_MESSAGE = "Click the link to verify your email"
 NOTIFICATION_PORT = "8081"
 
 # Frontend Variables
-REACT_APP_API_URL = "http://localhost:8080"
-REACT_APP_WS_URL = "ws://localhost:8080"
+FRONTEND_REACT_APP_API_URL = "http://localhost:8080"
+FRONTEND_REACT_APP_WS_URL = "ws://localhost:8080"
 FRONTEND_PORT = "80" 
