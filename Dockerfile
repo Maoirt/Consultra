@@ -16,10 +16,10 @@ RUN apt-get update && apt-get install -y \
 COPY . .
 
 # Build auth-service
-RUN cd auth-service && mvn clean package -DskipTests
+RUN cd auth-service && mvn clean package -DskipTests -q
 
 # Build notification-service
-RUN cd notification-service && mvn clean package -DskipTests
+RUN cd notification-service && mvn clean package -DskipTests -q
 
 # Build frontend
 RUN cd frontend && npm install && npm run build
