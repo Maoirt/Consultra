@@ -25,7 +25,7 @@ export default class ForgotPasswordForm extends React.Component {
     e.preventDefault();
     this.setState({ isLoading: true, message: "" });
     
-            fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/forgot-password`, {
+            fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/forgot-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

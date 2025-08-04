@@ -4,7 +4,7 @@ import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { v4 as uuidv4 } from 'uuid';
 
-const WS_URL = `${process.env.REACT_APP_WS_URL || 'ws://localhost:8080'}/ws-chat`;
+const WS_URL = `${process.env.FRONTEND_REACT_APP_WS_URL || 'ws://localhost:8080'}/ws-chat`;
 
 function getChatId(userId, consultantId) {
   return [userId, consultantId].sort().join('-');

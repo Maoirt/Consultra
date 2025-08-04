@@ -186,7 +186,7 @@ public class UserServiceImpl implements UserService {
         
                     try {
                 EmailRequest emailRequest = new EmailRequest(email, subject, body);
-                String notificationUrl = System.getenv("NOTIFICATION_SERVICE_URL") != null ? System.getenv("NOTIFICATION_SERVICE_URL") : "http://localhost:8081";
+                String notificationUrl = System.getenv("AUTH_NOTIFICATION_SERVICE_URL") != null ? System.getenv("AUTH_NOTIFICATION_SERVICE_URL") : "http://localhost:8081";
                 restTemplate.postForObject(notificationUrl + "/api/email/send-email", emailRequest, Void.class);
                 return true;
             } catch (Exception e) {

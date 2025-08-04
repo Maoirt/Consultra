@@ -8,6 +8,7 @@ healthcheckPath = "/actuator/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+healthcheckPort = 8080
 
 [env]
 # Auth Service Variables
@@ -26,6 +27,8 @@ NOTIFICATION_EMAIL_USERNAME = "your-email@gmail.com"
 NOTIFICATION_EMAIL_PASSWORD = "your-app-password"
 NOTIFICATION_EMAIL_HOST = "smtp.gmail.com"
 NOTIFICATION_EMAIL_PORT = "587"
+NOTIFICATION_EMAIL_SUBJECT = "Email Verification"
+NOTIFICATION_EMAIL_MESSAGE = "Click the link to verify your email"
 NOTIFICATION_PORT = "8081"
 
 # Frontend Variables

@@ -57,7 +57,7 @@ export default class ResetPasswordForm extends React.Component {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     
-            fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/reset-password`, {
+            fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/reset-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

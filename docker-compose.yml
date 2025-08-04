@@ -18,6 +18,12 @@ services:
       - NOTIFICATION_SERVICE_URL=${AUTH_NOTIFICATION_SERVICE_URL:-http://notification-service:8081}
       - CORS_ALLOWED_ORIGINS=${AUTH_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend:80}
       - JWT_SECRET_KEY=${AUTH_JWT_SECRET_KEY:-secret-value}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     networks:
       - app-network
   notification-service:
@@ -30,6 +36,12 @@ services:
       - EMAIL_PASSWORD=${NOTIFICATION_EMAIL_PASSWORD:-kzyu lpcs ywqt khzk}
       - EMAIL_HOST=${NOTIFICATION_EMAIL_HOST:-smtp.gmail.com}
       - EMAIL_PORT=${NOTIFICATION_EMAIL_PORT:-587}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     networks:
       - app-network
   frontend:

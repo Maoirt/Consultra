@@ -3,18 +3,32 @@ spring:
     name: notification-service
 
   mail:
-    host: ${EMAIL_HOST:smtp.gmail.com}
-    port: ${EMAIL_PORT:587}
-    username: ${EMAIL_USERNAME:maoirtx77@gmail.com}
-    password: ${EMAIL_PASSWORD:kzyu lpcs ywqt khzk}
+    host: ${NOTIFICATION_EMAIL_HOST:smtp.gmail.com}
+    port: ${NOTIFICATION_EMAIL_PORT:587}
+    username: ${NOTIFICATION_EMAIL_USERNAME:maoirtx77@gmail.com}
+    password: ${NOTIFICATION_EMAIL_PASSWORD:kzyu lpcs ywqt khzk}
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
       mail.smtp.starttls.required: true
 
 email:
-  subject: ${EMAIL_SUBJECT:Email Verification}
-  message: ${EMAIL_MESSAGE:Click the link to verify your email}
+  subject: ${NOTIFICATION_EMAIL_SUBJECT:Email Verification}
+  message: ${NOTIFICATION_EMAIL_MESSAGE:Click the link to verify your email}
 
 server:
   port: ${PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
+    disk:
+      enabled: true

@@ -40,11 +40,11 @@ export default class LoginForm extends React.Component {
   };
 
   loginGoogle = () => {
-            window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`
+            window.location.href = `${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/oauth2/authorization/google`
   }
 
   loginGithub = () => {
-            window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/oauth2/authorization/github`
+            window.location.href = `${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/oauth2/authorization/github`
   }
 
   toggleModal = () => {
@@ -54,7 +54,7 @@ export default class LoginForm extends React.Component {
   handleResetPassword = () => {
     const { email } = this.state;
     this.toggleModal();
-            window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/send-reset-link?email=${encodeURIComponent(email)}`;
+            window.location.href = `${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/send-reset-link?email=${encodeURIComponent(email)}`;
   }
 
   handleEmailChange = (event) => {
@@ -62,7 +62,7 @@ export default class LoginForm extends React.Component {
     this.setState({ email });
     alert(email)
     if (email && email.includes('@')) {
-              fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/send-verification-code`, {
+              fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/send-verification-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default class LoginForm extends React.Component {
     this.setState({ verificationCode });
     
     if (verificationCode.length === 6) {
-              fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/verify-code`, {
+              fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/verify-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

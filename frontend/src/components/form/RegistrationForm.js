@@ -41,7 +41,7 @@ export default class RegistrationForm extends React.Component {
     const email = event.target.value;
     this.setState({ email });
     if (email && email.includes('@gmail.com')) {
-              fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/send-verification-code`, {
+              fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/send-verification-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export default class RegistrationForm extends React.Component {
     this.setState({ verificationCode });
     
     if (verificationCode.length === 6) {
-              fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8080'}/verify-code`, {
+              fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/verify-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
