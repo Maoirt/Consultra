@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: auth-service
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    rootDir: auth-service
+
+  - type: web
+    name: notification-service
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    rootDir: notification-service
+
+  - type: web
+    name: frontend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    rootDir: frontend
+
+  - type: storage
+    name: uploads
+    path: /uploads
+
+databases: []
