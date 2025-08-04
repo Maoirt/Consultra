@@ -18,19 +18,13 @@ COPY notification-service/pom.xml ./notification-service/
 COPY auth-service/ ./auth-service/
 COPY notification-service/ ./notification-service/
 
-# Build auth-service with full clean and verbose output
+# Build auth-service with simplified process
 RUN cd auth-service && \
-    mvn clean && \
-    mvn dependency:resolve -X && \
-    mvn compile -X && \
-    mvn package -DskipTests -X
+    mvn clean package -DskipTests -q
 
-# Build notification-service with full clean and verbose output
+# Build notification-service with simplified process
 RUN cd notification-service && \
-    mvn clean && \
-    mvn dependency:resolve -X && \
-    mvn compile -X && \
-    mvn package -DskipTests -X
+    mvn clean package -DskipTests -q
 
 # Create startup script to run Java services
 RUN echo '#!/bin/bash\n\
