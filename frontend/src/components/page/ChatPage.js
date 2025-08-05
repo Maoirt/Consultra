@@ -237,7 +237,7 @@ export default function ChatPage({ chatId: propChatId }) {
             <div style={{ padding: 24, borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 16 }}>
               {currentConsultant && (
                 <>
-                  <img src={currentConsultant.avatarUrl ? `${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}${currentConsultant.avatarUrl}` : '/default-avatar.png'} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%' }} />
+                  <img src={currentConsultant.avatarUrl ? `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${currentConsultant.avatarUrl}` : '/default-avatar.png'} alt="avatar" style={{ width: 48, height: 48, borderRadius: '50%' }} />
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 18 }}>{(currentConsultant.firstName || currentConsultant.lastName) ? `${currentConsultant.firstName || ''} ${currentConsultant.lastName || ''}`.trim() : (currentConsultant.name || 'Имя не указано')}</div>
                     <div style={{ color: '#888', fontSize: 14 }}>{currentConsultant.profession || ''}</div>

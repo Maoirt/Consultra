@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import './Login.css';
 import { Link, useSearchParams } from 'react-router-dom';
+import { request } from '../../helpers/axios_helper';
 
 export default class ResetPasswordForm extends React.Component {
   constructor(props) {
@@ -57,26 +58,18 @@ export default class ResetPasswordForm extends React.Component {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     
-            fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/reset-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        token: token,
-        newPassword: this.state.newPassword 
-      })
+    request('POST', '/reset-password', { 
+      token: token,
+      newPassword: this.state.newPassword 
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(response => {
       this.setState({ 
-        message: data.message, 
-        success: data.success, 
+        message: response.data.message, 
+        success: response.data.success, 
         isLoading: false 
       });
       
-      if (data.success) {
-
+      if (response.data.success) {
         setTimeout(() => {
           window.location.href = '/login';
         }, 3000);

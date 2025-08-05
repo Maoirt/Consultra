@@ -131,23 +131,16 @@ export default class AppContent extends React.Component {
 
      onGoogleLogin = async () => {
         try {
-
-            const response = await fetch(`${process.env.FRONTEND_REACT_APP_API_URL || 'http://localhost:8080'}/oauth2/login/success`, {
-                method: "GET",
-                credentials: "include"
-            });
-
-            if (!response.ok) {
-                throw new Error("Ошибка аутентификации");
+            const response = await request("GET", "/oauth2/login/success");
+            
+            if (response.data) {
+                localStorage.setItem("token", response.data.token);
+                setAuthHeader(response.data.token);
+                this.setState({ 
+                    componentToShow: "messages",
+                    isAuthenticated: true
+                });
             }
-
-            const data = await response.json();
-            localStorage.setItem("token", data.token);
-            setAuthHeader(data.token);
-            this.setState({ componentToShow: "messages" });
-              this.setState({
-                       isAuthenticated: true,
-                   });
         } catch (error) {
             console.error("Ошибка при входе через Google", error);
         }
