@@ -9,7 +9,7 @@
 3. Основной сервис - создание страницы специалистов, загрузка информацию, отображение консультантов, поиск и т.д
 
 Стэк технологий:
-Java, Spring Data, Spring AMQP, Spring Rest, Spring Boot, PostgreSQL, Grafana, Loki, Docker, SwaggerUI, RabbitMQ, Hibernate (Liquibase), Jackson, JUnit
+Java, Spring Data, Spring Rest, Spring Boot, PostgreSQL, Docker, SwaggerUI, Hibernate (Liquibase), Jackson
 JavaScript, React + ...
 
 Roadmap.
